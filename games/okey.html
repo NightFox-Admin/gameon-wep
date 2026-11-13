@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="tr"><head>
+<script>const GO={on:null,set(v){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end'},'*')}catch(e){}}};</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>101 Okey</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{height:100%;margin:0;background:#07211a;overflow:hidden;font-family:'Fraunces',Georgia,serif;color:#f3e9cf}
+#stage{position:absolute;left:50%;top:50%;width:1000px;height:680px;transform-origin:center;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:44px;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 42%,#1c7a57 0,#0f5a41 55%,#093827 100%);box-shadow:0 0 0 14px #4e2f1a,0 0 0 17px #a8793f,0 30px 70px #000a}
+
+.emb{position:absolute;left:500px;top:290px;transform:translate(-50%,-50%);font:600 150px/1 Oswald,sans-serif;color:#ffffff10;letter-spacing:.05em;pointer-events:none}
+.t{position:absolute;width:44px;height:62px;box-sizing:border-box;border-radius:7px;padding-top:6px;text-align:center;cursor:grab;
+ font:600 31px/1 Oswald,sans-serif;background:linear-gradient(160deg,#fffdf4,#efe6cc 70%,#e2d6b6);box-shadow:0 4px 0 #c9bd98,0 5px 5px #0006;
+ transition:left .5s cubic-bezier(.2,.85,.25,1),top .5s cubic-bezier(.2,.85,.25,1),transform .5s cubic-bezier(.25,1,.3,1.25)}
+.t i{display:block;width:13px;height:13px;margin:4px auto 0;border:3px solid currentColor;border-radius:50%;box-sizing:border-box}
+.t.drag{transition:none;will-change:transform,left,top;z-index:200;cursor:grabbing;box-shadow:0 4px 0 #c9bd98,0 18px 20px #0009}
+.t.air{box-shadow:0 4px 0 #c9bd98,0 16px 18px #0008}
+.t.back{background:linear-gradient(160deg,#dccb9c,#bba570);color:transparent}.t.back *{visibility:hidden}
+.t.ok{box-shadow:0 4px 0 #c9bd98,0 0 0 2px #e8c477,0 7px 8px #0007}
+.t.k0{color:#c4262b}.t.k1{color:#1d4f9f}.t.k2{color:#232323}.t.k3{color:#d58a00}.t.kj{color:#1f7a3f}
+.rack{position:absolute;left:194px;top:466px;width:612px;height:204px;border-radius:16px 16px 10px 10px;
+ background:linear-gradient(#a96a27,#c68033 40%,#a96a27);box-shadow:inset 0 0 0 3px #d9a257,inset 0 8px 14px #0006,0 12px 24px #0008}
+.rack:before,.rack:after{content:"";position:absolute;left:10px;right:10px;height:12px;border-radius:3px;background:linear-gradient(#e9b868,#8a521c)}
+.rack:before{top:84px}.rack:after{top:176px}
+.slot{position:absolute;width:46px;height:64px;border-radius:6px;background:#0002;box-shadow:inset 0 2px 5px #0005}
+.zone{position:absolute;width:74px;height:100px;border:2px dashed #e8c477;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none}
+.zone.on{opacity:.85;animation:pu 1.2s infinite}@keyframes pu{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.zone.on{animation:none}}
+#stock{cursor:pointer;box-shadow:1px 1px 0 #a38d55,2px 2px 0 #bba570,3px 3px 0 #a38d55,4px 4px 0 #bba570,5px 5px 0 #a38d55,6px 10px 14px #000a}
+#cnt{position:absolute;left:432px;top:340px;width:70px;text-align:center;font-size:13px;color:#cfe6d8}
+.bot{position:absolute;transform:translate(-50%,-50%);text-align:center}
+.nm{display:inline-block;padding:3px 12px;border-radius:14px;background:#06251c;border:1px solid #ffffff30;font-size:13px;margin-bottom:6px;transition:.3s}
+.nm.act,.me.act{background:#e8c477;color:#2c1b08;box-shadow:0 0 18px #e8c477aa}
+.bk{margin:0 auto;border-radius:6px;background:linear-gradient(#c68033,#a96a27);box-shadow:inset 0 0 0 2px #d9a257,0 4px 8px #0008}#bot2 .bk{width:300px;height:26px}#bot1 .bk,#bot3 .bk{width:30px;height:260px}
+.melds{position:absolute;left:215px;top:112px;width:590px;height:134px;display:flex;flex-wrap:wrap;gap:6px 12px;align-content:flex-start;transform-origin:0 0}.meld{display:flex;padding:3px;border-radius:6px;background:#0003;border:1px solid #ffffff1a;height:fit-content}.meld.o0{border-color:#e8c477aa}
+.mt{width:22px;height:30px;box-sizing:border-box;margin-right:1px;border-radius:4px;background:linear-gradient(160deg,#fffdf4,#e7dcc0);box-shadow:0 2px 0 #c9bd98;font:600 15px/30px Oswald,sans-serif;text-align:center}.mt.w{outline:2px dashed #1f7a3f;outline-offset:-3px}.mt.k0{color:#c4262b}.mt.k1{color:#1d4f9f}.mt.k2{color:#232323}.mt.k3{color:#d58a00}
+#mp{white-space:pre-line}#rot{position:fixed;inset:0;z-index:999;display:none;place-items:center;background:#07211a;text-align:center;font-size:20px;line-height:1.6;padding:24px}@media (orientation:portrait){#rot{display:grid}}
+
+
+.me{position:absolute;left:140px;top:480px;padding:3px 10px;border-radius:14px;background:#06251c;border:1px solid #ffffff30;font-size:13px;writing-mode:vertical-rl;transform:rotate(180deg)}
+#msg{position:absolute;left:50%;top:434px;transform:translateX(-50%);padding:5px 16px;border-radius:20px;background:#04201799;font-size:14px;white-space:nowrap;border:1px solid #ffffff22}
+#btns{position:absolute;right:22px;top:12px;width:340px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+button{font:600 13px 'Fraunces',Georgia,serif;color:#f3e9cf;background:#0a3a2b;border:1px solid #e8c47788;border-radius:10px;padding:6px 11px;cursor:pointer}
+button:hover{background:#14513c}button:focus-visible{outline:2px solid #e8c477;outline-offset:2px}
+#modal{position:absolute;inset:0;display:none;place-items:center;background:#02130dd0;z-index:500}
+#modal.on{display:grid}#modal div{background:#0c3d2d;border:2px solid #e8c477;border-radius:18px;padding:26px 38px;text-align:center;max-width:420px}
+#modal h2{margin:0 0 8px;font-size:28px;color:#e8c477}#modal p{margin:0 0 16px;line-height:1.5}
+</style></head><body>
+<div id="stage">
+ <div class="emb">101</div>
+  <div id="btns"><button id="b6">Seri aç</button><button id="b4">Aç</button><button id="b5">Seri diz</button><button id="b1">Renge diz</button><button id="b2">Sayıya diz</button><button id="b3">Yeni el</button></div>
+ <div class="bot" id="bot2" style="left:500px;top:58px"><div class="nm">Ali</div><div class="bk"></div></div>
+ <div class="bot" id="bot1" style="left:936px;top:300px"><div class="nm">Mehmet</div><div class="bk"></div></div>
+ <div class="bot" id="bot3" style="left:64px;top:300px"><div class="nm">Zeynep</div><div class="bk"></div></div>
+ <div class="melds" id="melds"></div><div id="msg"></div>
+ <div class="zone" id="z0"></div><div class="zone" id="z3"></div>
+ <div class="t back" id="stock" title="Ortadan taş çek"></div><div id="cnt"></div>
+ <div class="rack" id="rack"></div><div class="me" id="me">Sen</div>
+ <div id="modal"><div><h2 id="mt"></h2><p id="mp"></p><button id="mb">Yeni el dağıt</button></div></div>
+</div>
+<div id="rot"><div>📱↻<br>Oyun yatay oynanır.<br>Telefonunu yan çevir.</div></div>
+<script>
+const $=s=>document.querySelector(s),st=$('#stage'),CN=['Kırmızı','Mavi','Siyah','Sarı'];
+let S=1;const probe=document.createElement('div');probe.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';document.body.appendChild(probe);
+function fit(){const cs=getComputedStyle(probe),T=parseFloat(cs.paddingTop)||0,R=parseFloat(cs.paddingRight)||0,B=parseFloat(cs.paddingBottom)||0,L=parseFloat(cs.paddingLeft)||0,vv=window.visualViewport,W=(vv?vv.width:innerWidth),H=(vv?vv.height:innerHeight),aw=W-L-R,ah=H-T-B;S=Math.min(aw/1044,ah/724);st.style.left=(L+aw/2)+'px';st.style.top=(T+ah/2)+'px';st.style.transform=`translate(-50%,-50%) scale(${S})`}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));window.visualViewport&&visualViewport.addEventListener('resize',fit);fit();
+const COLS=11,PITCH=52,RX=220,RY=[482,574],STOCK=[400,330],PILE=[[620,372],[760,320],[330,250],[250,330]],BC=[null,[936,300],[500,70],[64,300]];
+const NAMES=['Sen','Mehmet','Ali','Zeynep'],slotXY=i=>[RX+(i%COLS)*PITCH,RY[i<COLS?0:1]];
+let hand,hands,piles,stock,ind,okey,turn,phase,busy,over,uid=0,melds=[],mode=[],pen=[],scores=[0,0,0,0],round=1;
+const rnd=n=>Math.floor(Math.random()*n),wait=ms=>new Promise(r=>setTimeout(r,ms));
+const mk=(c,n,j)=>({id:uid++,c,n,j,slot:-1});
+const isOkey=t=>!t.j&&t.c===okey.c&&t.n===okey.n;
+let AC;function clack(v=.6){try{TG&&TG.HapticFeedback&&v>=.5&&TG.HapticFeedback.impactOccurred('light')}catch(e){}try{AC=AC||new AudioContext();const n=AC.sampleRate*.07,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,4);const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1500+rnd(900);const g=AC.createGain();g.gain.value=v;s.connect(f);f.connect(g);g.connect(AC.destination);s.start()}catch(e){}}
+function mkEl(t,back){const e=document.createElement('div');e.className='t '+(t.j?'kj':'k'+t.c)+(back?' back':'');e.innerHTML=(t.j?'★':t.n)+'<i></i>';e._t=t;t.el=e;st.appendChild(e);return e}
+function setPos(e,x,y,r=0,s=1){e.style.left=x+'px';e.style.top=y+'px';e.style.transform=`rotate(${r}deg) scale(${s})`}
+function place(t,i){hand[i]=t;t.slot=i;const[x,y]=slotXY(i);t.el.style.zIndex=1;setPos(t.el,x,y)}
+// ---- rack slots
+for(let i=0;i<22;i++){const d=document.createElement('div');d.className='slot';const[x,y]=slotXY(i);d.style.left=x-1+'px';d.style.top=y-1+'px';st.insertBefore(d,$('#stock'))}
+// ---- group validation (sets & runs, okey wild)
+function groups(){const gs=[],val=s=>s.length*100+(s.length>2?resolve(s).items.reduce((a,x)=>a+x.n,0):0);
+ const seg=b=>{const n=b.length,f=Array(n+1).fill(0),ch=Array(n+1).fill(0);for(let i=1;i<=n;i++){f[i]=f[i-1];for(let L=2;L<=Math.min(13,i);L++){const s=b.slice(i-L,i);if(!(L===2?vpair(s):valid(s)))continue;const v=f[i-L]+val(s);if(v>f[i]){f[i]=v;ch[i]=L}}}let i=n;while(i>0){if(ch[i]){gs.push(b.slice(i-ch[i],i));i-=ch[i]}else i--}};
+ for(let r=0;r<2;r++){let g=[];for(let c=0;c<=COLS;c++){const t=c<COLS?hand[r*COLS+c]:null;if(t)g.push(t);else{if(g.length)seg(g);g=[]}}}return gs}
+function valid(g){const L=g.length;if(L<3||L>13)return false;const f=g.filter(t=>!isOkey(t)).map(t=>t.j?{c:okey.c,n:okey.n}:t);if(!f.length)return true;
+ if(L<=4&&f.every(x=>x.n===f[0].n)&&new Set(f.map(x=>x.c)).size===f.length)return true;
+ if(f.every(x=>x.c===f[0].c)&&new Set(f.map(x=>x.n)).size===f.length){const ns=f.map(x=>x.n),mn=Math.min(...ns),mx=Math.max(...ns);return mx-mn+1<=L&&Math.max(1,mx-L+1)<=Math.min(mn,14-L)}return false}
+function mark(){let ok=0,all=0;document.querySelectorAll('.t.ok').forEach(e=>e.classList.remove('ok'));groups().forEach(g=>{all+=g.length;if(valid(g)||vpair(g)){ok+=g.length;g.forEach(t=>t.el.classList.add('ok'))}});return{ok,all}}
+// ---- UI state
+function ui(){const m=mark();$('#cnt').textContent='Kalan: '+stock.length;$('#z0').classList.toggle('on',phase==='discard'&&!turn&&!over);$('#z3').classList.toggle('on',phase==='draw'&&!turn&&!over&&piles[3].length>0);
+ [1,2,3].forEach(p=>{const b=$('#bot'+p);const n=b.querySelector('.nm');n.classList.toggle('act',turn===p);n.textContent=NAMES[p]+(mode[p]?(mode[p]==='pair'?' · çift':' · açtı'):'')});$('#me').classList.toggle('act',turn===0);
+ $('#b4').textContent=mode[0]?'Per ekle':'Aç';
+ $('#msg').textContent=over?'El bitti':turn?NAMES[turn]+' oynuyor…':phase==='draw'?'Sıra sende: ortadan çek ya da soldaki atığı al':mode[0]?'Taşı pere sürükle (işle) ya da sağdaki atığa bırak':'Perlerini diz, “Aç” de · sonra taşı sağdaki atığa bırak'}
+function say(s){$('#msg').textContent=s}
+// ---- deal
+async function deal(){GO.set(true);over=true;busy=true;$('#modal').classList.remove('on');st.querySelectorAll('.t:not(#stock)').forEach(e=>e.remove());
+ hand=Array(22).fill(null);hands=[[],[],[],[]];piles=[[],[],[],[]];melds=[];mode=[null,null,null,null];pen=[0,0,0,0];renderMelds();const all=[];
+ for(let c=0;c<4;c++)for(let n=1;n<=13;n++)for(let k=0;k<2;k++)all.push(mk(c,n,0));all.push(mk(0,0,1),mk(1,0,1));
+ for(let i=all.length-1;i>0;i--){const j=rnd(i+1);[all[i],all[j]]=[all[j],all[i]]}
+ let ix;do{ix=rnd(all.length)}while(all[ix].j);ind=all.splice(ix,1)[0];okey={c:ind.c,n:ind.n%13+1};stock=all;
+ for(let p=1;p<4;p++)for(let i=0;i<21;i++)hands[p].push(stock.pop());
+ setPos($('#stock'),STOCK[0],STOCK[1]);const ie=mkEl(ind);ie.style.cursor='default';setPos(ie,STOCK[0]+68,STOCK[1]+6,7,.92);
+ [[PILE[0],'z0'],[PILE[3],'z3']].forEach(([p,id])=>{const z=$('#'+id);z.style.left=p[0]-15+'px';z.style.top=p[1]-19+'px'});
+ turn=0;phase='discard';ui();say('Taşlar dağıtılıyor…');
+ for(let i=0;i<22;i++){const t=stock.pop(),e=mkEl(t,true);setPos(e,STOCK[0],STOCK[1]);e.style.zIndex=300;await wait(40);const s=i<11?i:COLS+i-11;place(t,s);setTimeout(()=>{e.classList.remove('back');clack(.35)},420)}
+ await wait(800);over=false;busy=false;ui()}
+// ---- my turn
+const firstEmpty=()=>hand.findIndex(x=>!x);
+async function myDraw(fromPile){if(turn||phase!=='draw'||busy||over)return;let t;
+ if(fromPile){if(!piles[3].length)return;t=piles[3].pop()}else{if(!stock.length){return endDraw()}busy=true;t=stock.pop();mkEl(t,true);setPos(t.el,STOCK[0],STOCK[1])}
+ busy=true;await wait(30);place(t,firstEmpty());await wait(350);t.el.classList.remove('back');clack();phase='discard';busy=false;ui()}
+async function throwTile(t){if(busy)return;busy=true;hand[t.slot]=null;t.slot=-1;const left=hand.filter(Boolean).length,spec=!mode[0]&&left===21&&groups().flat().length===21&&groups().every(valid),pn=(isOkey(t)||(left&&melds.some(m=>fits(m,t))))?101:0;pen[0]+=pn;const[x,y]=PILE[0];piles[0].push(t);t.el.classList.add('air');t.el.style.zIndex=10+piles[0].length;
+ setPos(t.el,x+rnd(14)-7,y+rnd(10)-5,rnd(50)-25,.84);await wait(520);t.el.classList.remove('air');clack(.9);
+ if(pn)say('Ceza +101: '+(isOkey(t)?'okey attın':'işlenebilir taş attın'));if(spec||!left)return endHand(0,t,spec);
+ phase='wait';turn=1;busy=false;ui();bots()}
+// ---- bots
+function score(h,t){if(t.j||isOkey(t))return 99;let s=0,seenC=new Set();h.forEach(o=>{if(o===t)return;if(o.j||isOkey(o)){s+=1;return}
+ if(o.n===t.n&&o.c!==t.c&&!seenC.has(o.c)){s+=2;seenC.add(o.c)}else if(o.n===t.n&&o.c===t.c)s+=1;else if(o.c===t.c&&Math.abs(o.n-t.n)===1)s+=2;else if(o.c===t.c&&Math.abs(o.n-t.n)===2)s+=1});return s}
+const cen=(p)=>[BC[p][0]-22,BC[p][1]-31];
+async function bots(){for(let p=1;p<4&&!over;p++){turn=p;ui();await wait(700);const h=hands[p],prev=(p+3)%4,top=piles[prev].at(-1);let t;
+  if(top&&wantPile(p,top)){t=piles[prev].pop();const[x,y]=cen(p);setPos(t.el,x,y,0,.5);await wait(450);t.el.remove()}
+  else{if(!stock.length)return endDraw();t=stock.pop();const e=mkEl(t,true);setPos(e,STOCK[0],STOCK[1]);e.style.zIndex=250;await wait(30);const[x,y]=cen(p);setPos(e,x,y,0,.5);clack(.4);await wait(450);e.remove()}
+  h.push(t);t.el=null;ui();await wait(650);if(botPlay(p)){ui();await wait(1000)}if(over)return;
+  const d=pickDisc(p);h.splice(h.indexOf(d),1);pen[p]+=(isOkey(d)||(h.length&&melds.some(m=>fits(m,d))))?101:0;ui();const e=mkEl(d);const[x,y]=cen(p);setPos(e,x,y,0,.5);e.style.zIndex=10+piles[p].length;
+  await wait(30);e.classList.add('air');piles[p].push(d);setPos(e,PILE[p][0]+rnd(14)-7,PILE[p][1]+rnd(10)-5,rnd(50)-25,.84);await wait(520);e.classList.remove('air');clack(.8);if(!h.length)return endHand(p,d)}
+ if(over)return;turn=0;phase='draw';busy=false;ui()}
+function finish(t,p){GO.set(false);over=true;busy=false;ui();$('#mt').textContent=t;$('#mp').textContent=p;$('#modal').classList.add('on')}
+// ---- drag & drop
+let drag=null,lastTap=0;const pt=e=>{const r=st.getBoundingClientRect();return{x:(e.clientX-r.left)/S,y:(e.clientY-r.top)/S}};
+st.addEventListener('pointerdown',e=>{const el=e.target.closest('.t');if(!el||!el._t||el._t.slot<0||busy||over)return;const p=pt(e);
+ drag={t:el._t,el,dx:p.x-parseFloat(el.style.left),dy:p.y-parseFloat(el.style.top),sx:p.x,sy:p.y,lx:p.x,moved:false};el.classList.add('drag');el.style.zIndex=200;el.setPointerCapture(e.pointerId);el.style.pointerEvents='none'});
+addEventListener('pointermove',e=>{if(!drag)return;const p=pt(e);if(Math.hypot(p.x-drag.sx,p.y-drag.sy)>4)drag.moved=true;
+ const r=Math.max(-16,Math.min(16,(p.x-drag.lx)*1.4));drag.lx=p.x;setPos(drag.el,p.x-drag.dx,p.y-drag.dy,r,1.1)});
+addEventListener('pointerup',e=>{if(!drag)return;const{t,el,dx,dy,moved}=drag;drag=null;el.classList.remove('drag');const md=document.elementFromPoint(e.clientX,e.clientY)?.closest('.meld');el.style.pointerEvents='';const p=pt(e),cx=p.x-dx+22,cy=p.y-dy+31,from=t.slot;
+ if(!moved){const n=Date.now();const dbl=n-lastTap<350;lastTap=n;place(t,from);if(dbl&&phase==='discard'&&!turn)throwTile(t);return}
+ if(md&&phase==='discard'&&!turn&&layoff(t,+md.dataset.i)){ui();return}
+ if(phase==='discard'&&!turn&&Math.hypot(cx-PILE[0][0]-22,cy-PILE[0][1]-31)<85)return throwTile(t);
+ let best=-1,bd=1e9;for(let i=0;i<22;i++){const[x,y]=slotXY(i),d=Math.hypot(x+22-cx,y+31-cy);if(d<bd){bd=d;best=i}}
+ if(bd<50){insert(t,best,from);clack(.55)}else place(t,from);ui()});
+function insert(t,best,from){hand[from]=null;if(hand[best]){const r=best<COLS?0:1,b0=r*COLS;let e=-1,bd=99;for(let i=b0;i<b0+COLS;i++)if(!hand[i]&&Math.abs(i-best)<bd){bd=Math.abs(i-best);e=i}
+ if(e<0){const o=hand[best];hand[best]=null;place(o,from)}else{const s=e>best?-1:1;for(let i=e;i!==best;i+=s){const o=hand[i+s];hand[i]=o;if(o)place(o,i);hand[i+s]=null}}}place(t,best)}
+// ---- buttons
+function arrange(key,sub){const ts=hand.filter(Boolean),sp=ts.filter(t=>t.j||isOkey(t)),rest=ts.filter(t=>!(t.j||isOkey(t))).sort((a,b)=>key(a)-key(b)||sub(a)-sub(b));
+ hand.fill(null);let i=0,last=null,run=[];const gs=[];rest.forEach(t=>{if(key(t)!==last){gs.push(run=[]);last=key(t)}run.push(t)});gs.push(sp);
+ layout(gs);clack(.5);ui()}
+$('#b1').onclick=()=>!busy&&arrange(t=>t.c,t=>t.n);$('#b2').onclick=()=>!busy&&arrange(t=>t.n,t=>t.c);$('#b3').onclick=deal;$('#mb').onclick=deal;
+$('#b4').onclick=openMe;$('#b5').onclick=()=>!busy&&!over&&seriDiz();$('#b6').onclick=seriAc;$('#stock').onclick=()=>myDraw(false);$('#z3').onclick=()=>myDraw(true);
+st.addEventListener('click',e=>{if(e.target.closest('#z3'))return;const r=st.getBoundingClientRect(),x=(e.clientX-r.left)/S,y=(e.clientY-r.top)/S,p=PILE[3];if(x>p[0]-10&&x<p[0]+60&&y>p[1]-14&&y<p[1]+80)myDraw(true)});
+// ---- melds, opening, laying off
+const rep=t=>t.j?{c:okey.c,n:okey.n}:t;
+const vpair=g=>{if(g.length!==2)return false;const f=g.filter(t=>!isOkey(t)).map(rep);return f.length<2||(f[0].c===f[1].c&&f[0].n===f[1].n)};
+function resolve(g){const L=g.length,ns=g.filter(t=>!isOkey(t)),ws=g.filter(isOkey);
+ if(L===2&&vpair(g)){const r=ns.length?rep(ns[0]):{c:okey.c,n:okey.n};return{kind:'pair',items:g.map(t=>({t,c:r.c,n:r.n,w:isOkey(t)?1:0}))}}
+ if(!valid(g))return null;const f=ns.map(rep),items=[];
+ if(L<=4&&(f.length<2||f.every(x=>x.n===f[0].n))){const n=f.length?f[0].n:13,used=new Set(f.map(x=>x.c));g.forEach(t=>{if(isOkey(t)){const c=[0,1,2,3].find(c=>!used.has(c));used.add(c);items.push({t,c,n,w:1})}else items.push({t,c:rep(t).c,n,w:0})});return{kind:'set',items}}
+ const s=f.length?Math.min(Math.min(...f.map(x=>x.n)),14-L):1,c=f.length?f[0].c:0;
+ for(let i=0;i<L;i++){const n=s+i,t=ns.find(x=>rep(x).n===n);items.push(t?{t,c,n,w:0}:{t:ws.pop(),c,n,w:1})}return{kind:'run',items}}
+function fits(m,t){if(m.kind==='pair')return null;const w=isOkey(t),r=rep(t),it=m.items;
+ if(m.kind==='set'){const n=it[0].n;if(it.length>=4)return null;const u=new Set(it.map(x=>x.c));if(w)return{c:[0,1,2,3].find(c=>!u.has(c)),n,w:1,end:1};return r.n===n&&!u.has(r.c)?{c:r.c,n,end:1}:null}
+ const c=it[0].c,lo=it[0].n,hi=it.at(-1).n;if(w){if(hi<13)return{c,n:hi+1,w:1,end:1};if(lo>1)return{c,n:lo-1,w:1};return null}
+ if(r.c!==c)return null;if(r.n===hi+1)return{c,n:r.n,end:1};if(r.n===lo-1)return{c,n:r.n};return null}
+function renderMelds(){const el=$('#melds'),tot=melds.reduce((a,m)=>a+m.items.length*23+20,0);let s=1;while(s>.5&&Math.ceil(tot*1.15/(590/s))*38*s>134)s-=.05;el.style.width=590/s+'px';el.style.transform='scale('+s+')';el.innerHTML=melds.map((m,i)=>`<div class='meld o${m.owner}' data-i=${i}>${m.items.map(x=>`<span class='mt k${x.c}${x.w?' w':''}'>${x.n}</span>`).join('')}</div>`).join('')}
+function layoff(t,i){if(!mode[0]||phase!=='discard')return false;const m=melds[i],f=fits(m,t);if(!f||hand.filter(Boolean).length<2){say(f?'Elinde en az bir taş kalmalı':'Bu taş oraya işlenmez');return false}
+ const it={t,c:f.c,n:f.n,w:f.w||0};f.end?m.items.push(it):m.items.unshift(it);hand[t.slot]=null;t.el.remove();t.el=null;t.slot=-1;renderMelds();clack(.7);return true}
+function openMe(){if(turn||phase!=='discard'||busy||over)return;const sr=groups().map(resolve).filter(Boolean),rs=sr.filter(r=>r.kind!=='pair'),ps=sr.filter(r=>r.kind==='pair'),sum=rs.reduce((s,r)=>s+r.items.reduce((a,x)=>a+x.n,0),0);let use;
+ if(mode[0]==='run')use=rs;else if(mode[0]==='pair')use=ps;else if(sum>=101)use=rs;else if(ps.length>=5)use=ps;else return say(rs.length?`Açmak için perlerin toplamı en az 101 olmalı (şimdi ${sum})`:ps.length?'Çift açmak için en az 5 çift gerekir':'Önce geçerli perleri aralarında boşluk bırakmadan diz');
+ if(!use.length)return say('Yeni geçerli per yok');if(hand.filter(Boolean).length-use.reduce((a,r)=>a+r.items.length,0)<1)return say('Elinde atılacak en az bir taş kalmalı');
+ if(!mode[0])mode[0]=use===ps?'pair':'run';
+ use.forEach(r=>{r.owner=0;melds.push(r);r.items.forEach(x=>{hand[x.t.slot]=null;x.t.slot=-1;x.t.el.remove();x.t.el=null})});renderMelds();clack(.8);ui()}
+// ---- bot logic
+function cands(h){const wl=h.filter(isOkey),nat=h.filter(t=>!isOkey(t)),out=[],all4=[0,1,2,3];
+ for(let c=0;c<4;c++)for(let s=1;s<=11;s++){const it=[];let u=0;for(let n=s;n<=13;n++){const t=nat.find(x=>rep(x).c===c&&rep(x).n===n);if(t)it.push({t,c,n,w:0});else if(u<wl.length)it.push({t:wl[u++],c,n,w:1});else break;if(it.length>=3&&!it[0].w&&!it.at(-1).w)out.push({kind:'run',items:it.slice()})}}
+ for(let n=1;n<=13;n++){const av=all4.filter(c=>nat.some(x=>rep(x).c===c&&rep(x).n===n));for(let m=0;m<16;m++){const cs=av.filter(c=>m>>c&1);if(cs.length<2||cs.length!==all4.filter(c=>m>>c&1).length)continue;
+  for(let w=0;w<=wl.length;w++){const k=cs.length+w;if(k<3||k>4)continue;const it=cs.map(c=>({t:nat.find(x=>rep(x).c===c&&rep(x).n===n),c,n,w:0})),free=all4.filter(c=>!cs.includes(c));for(let i=0;i<w;i++)it.push({t:wl[i],c:free[i],n,w:1});out.push({kind:'set',items:it})}}}
+ out.forEach(c=>c.sum=c.items.reduce((a,x)=>a+x.n,0));return out}
+function plan(h){const used=new Set(),ch=[];cands(h).sort((a,b)=>b.sum-a.sum).forEach(c=>{if(c.items.some(i=>used.has(i.t.id))||used.size+c.items.length>=h.length)return;c.items.forEach(i=>used.add(i.t.id));ch.push(c)});return ch}
+function pairsPlan(h){const g={},out=[];h.filter(t=>!isOkey(t)).forEach(t=>{const r=rep(t),k=r.c+'-'+r.n;(g[k]=g[k]||[]).push(t)});Object.values(g).forEach(a=>{if(a.length>=2){const r=rep(a[0]);out.push({kind:'pair',sum:r.n,items:a.slice(0,2).map(t=>({t,c:r.c,n:r.n,w:0}))})}});return out}
+function wantPile(p,top){if(mode[p]==='pair')return false;const pl=plan(hands[p].concat(top));return pl.some(c=>c.items.some(i=>i.t===top))&&(mode[p]||pl.reduce((s,c)=>s+c.sum,0)>=101)}
+function botPlay(p){const h=hands[p];let pl;
+ if(mode[p]==='pair')pl=pairsPlan(h);else{pl=plan(h);if(!mode[p]){if(pl.reduce((s,c)=>s+c.sum,0)>=101)mode[p]='run';else{const pr=pairsPlan(h);if(pr.length>=5){mode[p]='pair';pl=pr}else return false}}}
+ let laid=false;pl.forEach(c=>{if(h.length-c.items.length<1)return;c.items.forEach(x=>h.splice(h.indexOf(x.t),1));c.owner=p;melds.push(c);laid=true});
+ for(let k=0;k<h.length&&h.length>1;){const t=h[k],mi=melds.findIndex(m=>fits(m,t));if(mi>=0){const f=fits(melds[mi],t),it={t,c:f.c,n:f.n,w:f.w||0};f.end?melds[mi].items.push(it):melds[mi].items.unshift(it);h.splice(k,1);laid=true;k=0}else k++}
+ renderMelds();if(laid)clack(.7);return laid}
+function pickDisc(p){const h=hands[p],c=h.filter(t=>!isOkey(t)),pool=c.length?c:h,safe=pool.filter(t=>!melds.some(m=>fits(m,t))),a=safe.length?safe:pool;return a.reduce((x,y)=>score(h,y)<score(h,x)?y:x)}
+// ---- scoring
+function hv(p){return(p?hands[p]:hand.filter(Boolean)).reduce((s,t)=>s+(isOkey(t)?101:t.j?okey.n:t.n),0)}
+function endHand(w,last,spec){const jk=isOkey(last)?2:1,f=jk*(mode[w]==='pair'?2:1),d=[];
+ for(let p=0;p<4;p++){let x;if(p===w)x=spec?-202*jk:-101*f;else if(spec)x=404*jk;else{const m=mode[p],v=hv(p);x=m==='run'?v*f:m==='pair'?v*2*f:Math.min(202*f,404)}x+=pen[p];d.push(x);scores[p]+=x}
+ round++;finish(w?NAMES[w]+' eli bitirdi':'Tebrikler, eli bitirdin!',NAMES.map((n,p)=>`${n}: ${d[p]>0?'+':''}${d[p]}${pen[p]?' (ceza '+pen[p]+')':''}`).join('\n')+(jk>1?'\nOkey ile bitirildi: puanlar katlandı.':''))}
+function endDraw(){const x=[0,1,2,3].map(p=>{const n=(p?hands[p]:hand.filter(Boolean)).filter(isOkey).length*101;scores[p]+=n;return n});round++;finish('Taşlar bitti','El berabere. Elinde okey kalanlara +101:\n'+NAMES.map((n,p)=>n+': '+x[p]).join(' · '))}
+// ---- seri diz / seri aç
+function layout(gs){let free=22-gs.reduce((a,g)=>a+g.length,0),i=0;gs.forEach(g=>{if(!g.length)return;const w=COLS-i%COLS;if(i<COLS&&g.length>w&&w<COLS&&w<=free){free-=w;i=COLS}g.forEach(t=>place(t,i++));if(free>0&&i%COLS){i++;free--}})}
+function seriDiz(){const ts=hand.filter(Boolean);let pl=mode[0]==='pair'?pairsPlan(ts):plan(ts);if(!mode[0]&&pl.reduce((s,c)=>s+c.sum,0)<101){const pr=pairsPlan(ts);if(pr.length>=5)pl=pr}
+ const used=new Set(pl.flatMap(c=>c.items.map(i=>i.t.id))),rest=ts.filter(t=>!used.has(t.id)).sort((a,b)=>a.c-b.c||a.n-b.n);
+ hand.fill(null);layout(pl.map(c=>c.items.map(i=>i.t)).concat([rest]));clack(.5);ui();return pl}
+function seriAc(){if(turn||phase!=='discard'||busy||over)return;seriDiz();setTimeout(openMe,450)}
+// ---- Telegram Mini App
+const TG=(()=>{try{return parent.Telegram&&parent.Telegram.WebApp}catch(e){return null}})();
+try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}
+deal();
+</script></body></html>

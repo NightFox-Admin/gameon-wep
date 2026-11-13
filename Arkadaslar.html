@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="dark">
+<title>Arkadaşlar</title>
+<link rel="stylesheet" href="assets/app.css">
+<script src="config.js"></script><script src="assets/api.js"></script>
+<style>.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.card{background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.fa{position:relative;width:54px;height:54px}.nm{font-size:14px;font-weight:800}.st{font-size:11px;color:var(--text-muted)}</style>
+<style>
+/* --- DİŞİ TİLKİ PET + MAVİ BULANIK ARKAPLAN --- */
+#blueBlur{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+#blueBlur i{position:absolute;left:10vw;top:10vh;width:60vmax;height:60vmax;border-radius:50%;
+ background:radial-gradient(circle,rgba(37,99,235,.5) 0,rgba(14,116,233,.14) 45%,transparent 70%);
+ filter:blur(55px);transition:transform 9s ease-in-out;will-change:transform}
+#foxPet{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:900;
+ width:84px;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;transition:transform .35s}
+#foxPet .foxBody{font-size:54px;line-height:1;display:inline-block;transform-origin:50% 100%;
+ animation:foxBreath 3s ease-in-out infinite;filter:drop-shadow(0 6px 12px rgba(0,0,0,.55))}
+@keyframes foxBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+#foxBubble{position:absolute;right:78px;bottom:58px;min-width:190px;max-width:255px;
+ background:var(--bg-card,#0f1a35);border:1px solid var(--border,rgba(59,130,246,.4));border-radius:14px;
+ padding:10px 12px;font:700 12px 'Nunito',system-ui,sans-serif;color:var(--text,#e8f0ff);
+ box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transform:translateY(10px) scale(.9);transition:all .3s;
+ pointer-events:none;text-align:left}
+#foxBubble.on{opacity:1;transform:none}
+#foxBubble:after{content:'';position:absolute;right:-7px;bottom:16px;border:7px solid transparent;
+ border-left-color:var(--border,rgba(59,130,246,.4));border-right:0}
+#foxPet.cilve .foxBody{animation:foxCilve 1s ease-in-out infinite}
+@keyframes foxCilve{0%,100%{transform:rotate(-8deg) scale(1.06)}25%{transform:rotate(8deg) scale(1.16)}
+ 50%{transform:rotate(-10deg) scale(1.06)}75%{transform:rotate(6deg) scale(1.2)}}
+.foxHeart{position:absolute;pointer-events:none;animation:heartFloat 1.6s ease-out forwards}
+@keyframes heartFloat{0%{opacity:0;transform:translateY(0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translateY(-75px) scale(1.25)}}
+body.foxzoom{overflow:hidden}
+body.foxzoom .layout,body.foxzoom .topbar,body.foxzoom .wrap{
+ transform:scale(1.55);transform-origin:88% 92%;transition:transform 1.4s cubic-bezier(.4,0,.2,1)}
+body.foxzoom #foxPet{transform:scale(1.55);transition:transform 1.4s cubic-bezier(.4,0,.2,1)}
+body.foxzoom #foxBubble{transform:scale(.7)}
+</style>
+
+</head><body>
+<div class="wrap"><a class="back" href="index.html">← Ana Ekran</a>
+<h1>👥 Arkadaşlar</h1>
+<div style="display:flex;gap:8px;margin-bottom:14px"><input id="q" placeholder="@kullaniciadi veya ID" style="flex:1;min-width:0;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px;font:700 13px system-ui"><button class="btn" id="add" style="padding:0 16px">➕ Ekle</button></div>
+<div class="grid" id="g"></div>
+</div>
+<script>if(window.parent===window)document.body.classList.add("standalone");
+function prof(){try{return localStorage.getItem("gameon.profile")||"profil1"}catch(e){return "profil1"}}
+function pname(){try{return localStorage.getItem("gameon.name")||"Sen"}catch(e){return "Sen"}}
+
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var G=document.getElementById('g'),API=window.GameOnAPI;
+function draw(list){G.innerHTML=list.length?list.map(function(f,i){var n=f.username?'@'+f.username:(f.first_name||'Oyuncu');
+  return '<div class="card rise" style="animation-delay:'+(i*50)+'ms"><div class="fa"><img class="av" width="54" height="54" src="profil/'+(f.avatar||'profil1')+'.webp" alt=""></div><div class="nm">'+esc(n)+'</div><div class="st">⭐ '+f.points+'</div><button class="btn" data-m="'+f.id+'">💬 Mesaj</button><button class="btn gray" data-d="'+f.id+'">Çıkar</button></div>'}).join(''):'<div class="card"><div class="st">Henüz arkadaşın yok. Kullanıcı adı veya ID ile ekle.</div></div>'}
+function load(){(API&&API.enabled?API.req('GET','/api/friends'):Promise.reject()).then(function(r){draw(r.friends||[])}).catch(function(){G.innerHTML='<div class="card"><div class="st">Arkadaşlar yüklenemedi</div></div>'})}
+document.getElementById('add').onclick=function(){var q=document.getElementById('q').value.trim();if(!q||!API)return;API.req('POST','/api/friends',{query:q}).then(function(r){if(r&&r.ok){document.getElementById('q').value='';draw(r.friends)}else alert('Kullanıcı bulunamadı (bota /start vermiş olmalı)')})};
+G.onclick=function(e){var m=e.target.dataset.m,d=e.target.dataset.d;
+  if(m)API.req('POST','/api/friends/'+m+'/msg',{}).then(function(r){alert(r&&r.ok?'Bot sana sohbet bağlantısını DM olarak gönderdi.':'Mesaj gönderilemedi (önce bota /start ver)')});
+  if(d)API.req('DELETE','/api/friends/'+d).then(load)};
+load();
+</script>
+<script>
+/* --- DİŞİ TİLKİ PET: bildirim söyleme + AFK cilve (günde 1 kez) + mavi bulanık arkaplan --- */
+(function(){
+ if(window.parent!==window)return;
+ var today=new Date().toISOString().slice(0,10);
+ var KEY='gameon.fox.cilve.'+today;
+
+ /* mavi bulanık hareketli arkaplan */
+ var bb=document.createElement('div');bb.id='blueBlur';bb.innerHTML='<i></i>';
+ document.body.insertBefore(bb,document.body.firstChild);
+ var bi=bb.firstChild;
+ function moveBlue(){
+  var x=(Math.random()*70-35),y=(Math.random()*70-35),s=.7+Math.random()*1;
+  bi.style.transform='translate('+x+'vw,'+y+'vh) scale('+s+')';
+ }
+ moveBlue();setInterval(moveBlue,8000);
+
+ /* tilki pet */
+ var fox=document.createElement('div');fox.id='foxPet';
+ fox.innerHTML='<div id="foxBubble"></div><div class="foxBody">🦊</div>';
+ document.body.appendChild(fox);
+ var bEl=fox.querySelector('#foxBubble');
+
+ /* konuşma balonu: en çok oynanan / arkadaşlık isteği / oyun daveti */
+ var MSG=[
+  ['🎮','En çok oynanan oyun: Dama 🔥 Hemen dene!'],
+  ['👥','Arkadaşlık isteği: Zeynep A. seni eklemek istiyor!'],
+  ['🎲','Oyun daveti: Mert sana Mangala oynamak için davet gönderdi!'],
+  ['🏆','Sıralamada 1. sıraya yükseldin, tebrikler!'],
+  ['🦊','Bugün hangi oyunu oynayalım, yakışıklı? 💕']
+ ];
+ var mi=0,bt;
+ function showMsg(){
+  bEl.textContent=MSG[mi][0]+' '+MSG[mi][1];
+  bEl.classList.add('on');
+  mi=(mi+1)%MSG.length;
+  clearTimeout(bt);
+  bt=setTimeout(function(){bEl.classList.remove('on')},4200);
+ }
+ setTimeout(showMsg,1500);
+ setInterval(showMsg,6500);
+ fox.onclick=showMsg;
+
+ /* AFK takibi + günde 1 kez cilve */
+ var lastActive=Date.now(),cilving=false,cilveTimer,heartTimer;
+ function poke(){lastActive=Date.now();if(cilving)stopCilve();}
+ ['pointerdown','touchstart','keydown','wheel'].forEach(function(ev){
+  document.addEventListener(ev,poke,{passive:true});
+ });
+
+ function hearts(){
+  var icons=['💕','💖','💗'];
+  for(var i=0;i<3;i++){
+   (function(ic){
+    var h=document.createElement('span');h.className='foxHeart';h.textContent=ic;
+    h.style.right=(Math.random()*55)+'px';
+    h.style.bottom=(55+Math.random()*35)+'px';
+    h.style.fontSize=(13+Math.random()*8)+'px';
+    fox.appendChild(h);
+    setTimeout(function(){h.remove()},1700);
+   })(icons[i]);
+  }
+ }
+
+ function startCilve(){
+  cilving=true;
+  try{localStorage.setItem(KEY,'1')}catch(e){}
+  document.body.classList.add('foxzoom');      /* ekran tilkiye doğru zomlar */
+  setTimeout(function(){
+   fox.classList.add('cilve');                 /* tilki cilve yapar */
+   hearts();
+  },900);
+  heartTimer=setInterval(hearts,700);
+  cilveTimer=setTimeout(function(){stopCilve();},12000); /* en fazla 12 sn */
+ }
+
+ function stopCilve(){
+  cilving=false;
+  clearTimeout(cilveTimer);clearInterval(heartTimer);
+  document.body.classList.remove('foxzoom');
+  fox.classList.remove('cilve');
+  fox.querySelectorAll('.foxHeart').forEach(function(h){h.remove()});
+ }
+
+ var AFK=45000; /* 45 sn hareketsizlik */
+ setInterval(function(){
+  if(cilving)return;
+  var used=false;
+  try{used=!!localStorage.getItem(KEY)}catch(e){}
+  if(used)return;                                /* bugün zaten yapıldı */
+  if(Date.now()-lastActive>AFK)startCilve();
+ },5000);
+})();
+</script>
+
+</body></html>

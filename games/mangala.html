@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mangala</title>
+<style>
+:root{--bg1:#2b1a10;--bg2:#120a05;--ink:#f3e3c3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px;
+background:radial-gradient(ellipse at 50% 30%,var(--bg1),var(--bg2));color:var(--ink);font-family:Georgia,"Times New Roman",serif}
+h1{margin:0;font-size:28px;letter-spacing:4px;text-shadow:0 2px 6px #000}
+#status{font-size:19px;min-height:28px;text-align:center;text-shadow:0 1px 3px #000}
+#status b{color:#ffd37a}
+.wrap{max-width:100%;overflow-x:auto;padding:8px}
+.board{--p:92px;display:flex;gap:14px;padding:52px 22px;border-radius:26px;position:relative;
+background:
+repeating-linear-gradient(90deg,rgba(50,22,6,.10) 0 2px,transparent 2px 9px),
+repeating-linear-gradient(88deg,rgba(255,220,160,.07) 0 1px,transparent 1px 23px),
+linear-gradient(180deg,#a8683a,#8a4f28 50%,#9a5b30);
+box-shadow:0 30px 50px rgba(0,0,0,.65),inset 0 2px 3px rgba(255,220,170,.45),inset 0 -4px 8px rgba(40,15,0,.6),0 0 0 6px #5e3416,0 0 0 9px #3d200c}
+.mid{display:grid;grid-template-columns:repeat(6,var(--p));gap:14px}
+.pit,.tre{position:relative;border-radius:50%;
+background:radial-gradient(circle at 50% 30%,#1d0d04,#4a2810 80%);
+box-shadow:inset 0 8px 14px rgba(0,0,0,.85),inset 0 -2px 4px rgba(255,200,140,.25),0 1px 0 rgba(255,215,170,.5);}
+.pit{width:var(--p);height:var(--p);cursor:default;user-select:none}
+.tre{width:calc(var(--p) + 14px);border-radius:60px;min-height:100%}
+.pit.on{cursor:pointer;outline:3px solid rgba(255,211,122,.75);outline-offset:3px}
+.pit.on:hover{outline-color:#ffd37a;filter:brightness(1.25)}
+.stone{pointer-events:none;position:absolute;width:25%;aspect-ratio:1;filter:drop-shadow(1px 2px 2px rgba(0,0,0,.75))}.stone svg{width:100%;height:100%;display:block}
+#start{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;text-align:center;
+background:repeating-linear-gradient(90deg,rgba(50,22,6,.12) 0 2px,transparent 2px 11px),radial-gradient(ellipse at 50% 40%,#9a5b30,#4a2810 70%,#1c0e05)}
+#start h2{margin:0;font-size:clamp(40px,9vw,84px);letter-spacing:10px;color:#ffe2a8;text-shadow:0 3px 0 #5e3416,0 8px 18px #000}
+#start p{margin:0;font-size:18px;color:#f3d9aa;text-shadow:0 1px 3px #000}
+#start .gems{display:flex;gap:10px}#start .gems span{width:44px;filter:drop-shadow(1px 3px 3px rgba(0,0,0,.8))}
+button.big{font-size:26px;padding:14px 64px;letter-spacing:3px;border-radius:12px}
+#start.hide{display:none}
+.tre .stone{width:26%}
+.cnt{position:absolute;left:50%;transform:translateX(-50%);font-size:15px;color:#f3d9aa;text-shadow:0 1px 2px #000;pointer-events:none;background:rgba(20,8,0,.55);padding:0 8px;border-radius:10px}
+.pit .cnt{bottom:-24px}
+.pit.p2 .cnt{bottom:auto;top:-24px}
+.tre .cnt{top:6px}
+.lbl{position:absolute;left:50%;transform:translateX(-50%);font-size:13px;letter-spacing:2px;color:#f3d9aa;text-shadow:0 1px 2px #000;white-space:nowrap}
+.top{top:-44px}.bot{bottom:-44px}
+button.r{font:inherit;font-size:16px;padding:9px 22px;border-radius:8px;border:1px solid #3d200c;color:#2b1405;cursor:pointer;
+background:linear-gradient(#d9a066,#a8683a);box-shadow:0 3px 0 #5e3416,0 6px 10px rgba(0,0,0,.5)}
+button.r:active{transform:translateY(2px)}
+.rules{max-width:640px;font-size:14px;line-height:1.5;opacity:.85}
+.rules summary{cursor:pointer}
+@media(max-width:760px){.board{--p:52px;gap:8px;padding:48px 14px}.mid{gap:8px}.cnt{font-size:12px}.pit .cnt{bottom:-20px}.pit.p2 .cnt{bottom:auto;top:-20px}}
+#rot{position:fixed;inset:0;z-index:90;background:#120a05;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:28px;font-size:16px}#rot.show{display:flex}#rot .ph{font-size:60px}
+@media (orientation:landscape) and (max-height:520px){h1,.rules{display:none}body{padding:6px;gap:6px;min-height:100dvh}.board{padding:36px 14px;gap:8px}.mid{gap:8px}.lbl.top{top:-32px}.lbl.bot{bottom:-32px}#status{font-size:15px;min-height:20px}button.r{padding:5px 16px;font-size:14px}}
+body.flip .wrap{transform:rotate(180deg)}body.flip .cnt,body.flip .lbl{transform:translateX(-50%) rotate(180deg)}
+#nmenu{display:none;gap:8px;flex-wrap:wrap;justify-content:center}#nmenu.on{display:flex}
+</style>
+</head>
+<body>
+<div id="rot"><div class="ph">📱</div><b>Telefonu yan çevir</b><span>Mangala yatay ekranda oynanır.</span></div>
+<div id="start"><h2>MANGALA</h2><div class="gems" id="sg"></div><p>Klasik Türk zeka oyunu</p><button class="r big" id="play">OYNA</button></div>
+<h1>MANGALA</h1>
+<div id="status"></div>
+<div class="wrap"><div class="board" id="board"></div></div>
+<button class="r" id="newgame">Yeni Oyun</button>
+<div id="nmenu"><button class="r" data-c="bot">🤖 Botlarla Oyna</button><button class="r" data-c="room">🏠 Oda Kur</button><button class="r" data-c="x">Vazgeç</button></div>
+<details class="rules"><summary>Kurallar</summary>
+Her kuyuda 4 taş ile başlanır. Kendi kuyunuzdan bir kuyu seçip tüm taşları alırsınız; ilk taşı aynı kuyuya bırakıp kalanları saat yönünün tersine tek tek dağıtırsınız (kuyuda tek taş varsa o taş bir sonraki kuyuya gider). Rakibin hazinesine taş atılmaz.
+Son taş kendi hazinenize düşerse tekrar oynarsınız. Son taş rakibin kuyusuna düşer ve orada çift sayı olursa o taşları alırsınız. Son taş kendi boş kuyunuza düşerse, karşısındaki kuyu doluysa ikisini birden alırsınız. Bir tarafın kuyuları boşalınca oyun biter; kalan taşlar sahibine gider, en çok taşı toplayan kazanır.
+</details>
+<script>
+const COLORS=["#e0194a","#1e63e0","#14b86a","#ffb81c","#9b3fe0","#19c8d8","#ff5fa8","#ff7a1a"];
+function gem(c){return `<svg viewBox="0 0 100 100"><polygon points="20,10 80,10 100,38 50,95 0,38" fill="${c}"/><polygon points="20,10 80,10 65,38 35,38" fill="#fff" opacity=".45"/><polygon points="20,10 35,38 0,38" fill="#fff" opacity=".2"/><polygon points="80,10 100,38 65,38" fill="#000" opacity=".12"/><polygon points="0,38 35,38 50,95" fill="#fff" opacity=".12"/><polygon points="35,38 65,38 50,95" fill="#000" opacity=".1"/><polygon points="65,38 100,38 50,95" fill="#000" opacity=".35"/><polygon points="26,15 40,15 34,24 24,24" fill="#fff" opacity=".8"/><polygon points="20,10 80,10 100,38 50,95 0,38" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/></svg>`}
+const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};
+const msg=o=>{try{parent.postMessage(o,'*')}catch(e){}};
+const MODE=new URLSearchParams(location.search).get('mode')==='room'?'room':'bot';
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const N=["Sen","Bot"],AV=["profil1","profil1"];let ME=0,gen=0,rq=[],draining=false;
+const mine=()=>turn===ME;
+const lab=i=>`<img src="../profil/${AV[i]}.webp" alt="" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:5px">${esc(N[i].toUpperCase())}`;
+let b,turn,busy,over;
+const $=id=>document.getElementById(id);
+const side=i=>i<6?0:(i>6&&i<13?1:-1);
+const T=p=>p?13:6;
+const sleep=ms=>{const g=gen;return new Promise((r,j)=>setTimeout(()=>g===gen?r():j("x"),ms))};
+function nxt(pos,pl){pos=(pos+1)%14;if(pos===T(1-pl))pos=(pos+1)%14;return pos}
+
+function build(){
+ const bd=$("board");bd.innerHTML="";
+ const mk=(cls,i)=>{const e=document.createElement("div");e.className=cls+(cls==="pit"&&i>6?" p2":"");e.id="c"+i;
+  if(cls==="pit")e.addEventListener("click",()=>play(i));return e};
+ const l=mk("tre",13);l.innerHTML='<span class="lbl bot" style="bottom:-18px"></span>';
+ const r=mk("tre",6);
+ const mid=document.createElement("div");mid.className="mid";
+ for(let i=12;i>=7;i--)mid.appendChild(mk("pit",i));
+ for(let i=0;i<6;i++)mid.appendChild(mk("pit",i));
+ bd.append(l,mid,r);
+ const t=document.createElement("span");t.className="lbl top";t.innerHTML=lab(1);mid.style.position="relative";
+ const bt=document.createElement("span");bt.className="lbl bot";bt.innerHTML=lab(0);
+ mid.append(t,bt);
+}
+
+function stones(el,n,idx,tre){
+ el.querySelectorAll(".stone").forEach(s=>s.remove());
+ const asp=tre?el.clientWidth/Math.max(el.clientHeight,1):1;
+ for(let k=0;k<n;k++){
+  const a=k*2.399+idx, rr=tre?Math.sqrt(k)*7.2:Math.sqrt(k)*8.4;
+  let x=50+Math.cos(a)*Math.min(rr,tre?40:38), y=tre?(14+ (k*37%72)) : 50+Math.sin(a)*Math.min(rr,38);
+  if(tre){x=50+Math.cos(a)*Math.min(rr,34)}
+  const s=document.createElement("i");s.className="stone";
+  const c=COLORS[(k*5+idx*3)%COLORS.length];
+  s.innerHTML=gem(c);s.style.transform=`translate(-50%,-50%) rotate(${(k*53+idx*17)%50-25}deg)`;
+  s.style.left=x+"%";s.style.top=y+"%";el.appendChild(s);
+ }
+}
+
+function render(){
+ for(let i=0;i<14;i++){
+  const el=$("c"+i),tre=i===6||i===13;
+  stones(el,b[i],i,tre);
+  let c=el.querySelector(".cnt");if(!c){c=document.createElement("span");c.className="cnt";el.appendChild(c)}
+  c.textContent=b[i];
+  if(!tre)el.classList.toggle("on",!busy&&!over&&side(i)===turn&&mine()&&b[i]>0);
+ }
+}
+function say(h){$("status").innerHTML=h}
+function turnMsg(){say(`Sıra: <b>${N[turn]}</b>`)}
+
+function init(){gen++;b=Array(14).fill(4);b[6]=b[13]=0;turn=0;busy=false;over=false;build();render();turnMsg();GO.set(true);msg({gameon:"turn",seat:0});if(MODE==="bot"&&turn===1)botTurn()}
+
+async function play(p,fb){try{await play0(p,fb)}catch(e){if(e!=="x")throw e}}
+async function play0(p,fb){
+ if(busy||over||side(p)!==turn||!b[p]||(!fb&&!mine()))return;
+ busy=true;render();
+ const n=b[p];b[p]=0;let pos=p,note="";
+ if(n===1){pos=nxt(pos,turn);b[pos]++;render();await sleep(300)}
+ else{b[p]=1;render();await sleep(300);
+  for(let k=1;k<n;k++){pos=nxt(pos,turn);b[pos]++;render();await sleep(300)}}
+ let extra=false;const t=T(turn);
+ if(pos===t){extra=true;note="Son taş hazineye düştü, tekrar oynuyorsunuz!"}
+ else if(side(pos)===1-turn&&b[pos]%2===0){note=`Çift sayı! ${b[pos]} taş alındı.`;b[t]+=b[pos];b[pos]=0}
+ else if(side(pos)===turn&&b[pos]===1&&b[12-pos]>0){note=`Karşı kuyudan ${b[12-pos]} taş kazanıldı.`;b[t]+=1+b[12-pos];b[pos]=0;b[12-pos]=0}
+ render();await sleep(350);
+ const s0=b.slice(0,6).reduce((a,x)=>a+x,0),s1=b.slice(7,13).reduce((a,x)=>a+x,0);
+ if(!s0||!s1){
+  b[6]+=s0;b[13]+=s1;for(let i=0;i<6;i++)b[i]=0;for(let i=7;i<13;i++)b[i]=0;
+  over=true;busy=false;render();
+  if(MODE==="room"&&!fb)msg({gameon:"move",data:{p},next:turn});
+  GO.set(false,b[6]>=b[13]?[0,1]:[1,0]);
+  const w=b[6]===b[13]?"Oyun berabere bitti!":`<b>${N[b[6]>b[13]?0:1]}</b> kazandı!`;
+  say(`${w} (${b[6]} - ${b[13]})`);return;
+ }
+ if(!extra)turn=1-turn;
+ busy=false;render();turnMsg();
+ if(MODE==="room"&&!fb)msg({gameon:"move",data:{p},next:turn});
+ msg({gameon:"turn",seat:turn});
+ if(MODE==="bot"&&turn===1)botTurn();
+ if(note)$("status").innerHTML+=`<br><small>${note}</small>`;
+}
+addEventListener("error",e=>{busy=false;say("Hata: "+e.message)});
+$("newgame").addEventListener("click",()=>{if(MODE==="room"&&!over)return say("Oyun bitince yeni oyun açabilirsin.");$("nmenu").classList.toggle("on")});
+$("nmenu").addEventListener("click",e=>{const c=e.target.dataset.c;if(!c)return;$("nmenu").classList.remove("on");if(c!=="x")msg({gameon:"newgame",choice:c})});
+/* ---- bot (alfa-beta) ---- */
+function sim(bd,tn,p){const b=bd.slice();let n=b[p],pos=p;b[p]=0;if(n===1){pos=nxt(pos,tn);b[pos]++}else{b[p]=1;for(let k=1;k<n;k++){pos=nxt(pos,tn);b[pos]++}}
+ let extra=false;const t=T(tn);if(pos===t)extra=true;else if(side(pos)===1-tn&&b[pos]%2===0){b[t]+=b[pos];b[pos]=0}else if(side(pos)===tn&&b[pos]===1&&b[12-pos]>0){b[t]+=1+b[12-pos];b[pos]=0;b[12-pos]=0}
+ const s0=b.slice(0,6).reduce((a,x)=>a+x,0),s1=b.slice(7,13).reduce((a,x)=>a+x,0);let over=false;if(!s0||!s1){b[6]+=s0;b[13]+=s1;for(let i=0;i<6;i++)b[i]=0;for(let i=7;i<13;i++)b[i]=0;over=true}
+ return{b,extra:extra&&!over,over}}
+const mv=tn=>{const r=[],s=tn?7:0;for(let i=s;i<s+6;i++)r.push(i);return r};
+function ab(b,tn,d,al,be){let best=tn?-1e9:1e9,any=false;for(const p of mv(tn)){if(!b[p])continue;any=true;const r=sim(b,tn,p);let v;
+  if(r.over)v=(r.b[13]-r.b[6])*10;else if(d<=1)v=r.b[13]-r.b[6];else v=ab(r.b,r.extra?tn:1-tn,d-1,al,be);
+  if(tn){if(v>best)best=v;al=Math.max(al,best)}else{if(v<best)best=v;be=Math.min(be,best)}if(al>=be)break}
+ return any?best:0}
+function botTurn(){const g=gen;busy=true;render();say("Bot düşünüyor…");setTimeout(()=>{if(g!==gen)return;let best=-1e9,m=[];
+  for(const p of mv(1)){if(!b[p])continue;const r=sim(b,1,p);let v=r.over?(r.b[13]-r.b[6])*10:ab(r.b,r.extra?1:0,5,-1e9,1e9);v+=Math.random()*.3;if(v>best){best=v;m=[p]}}
+  busy=false;if(m.length)play(m[0],true)},700)}
+/* ---- oda: sunucu/kabuk köprüsü ---- */
+async function drain(){if(draining)return;draining=true;try{while(rq.length){while(busy||over||!started)await new Promise(r=>setTimeout(r,100));await play(rq.shift(),true)}}finally{draining=false}}
+let started=false;
+addEventListener("message",e=>{const d=e.data||{};if(e.source!==parent)return;
+ if(d.gameon==="init"){ME=d.me|0;(d.players||[]).forEach((p,i)=>{N[i]=p.username?"@"+p.username:(p.first_name||"Oyuncu");AV[i]=p.avatar||"profil1"});
+  document.body.classList.toggle("flip",ME===1);init();started=true;(d.moves||[]).forEach(m=>{if(m.seat!==ME)rq.push(m.data.p)});drain()}
+ else if(d.gameon==="remote"&&d.data&&started){rq.push(d.data.p);drain()}});
+function fit(){const W=innerWidth,H=innerHeight,p=Math.max(34,Math.min(96,Math.min((W-110)/8.4,(H-170)/2.7)));
+ document.querySelector(".board").style.setProperty("--p",p+"px");
+ const por=H>W&&("ontouchstart"in window||navigator.maxTouchPoints>0);$("rot").classList.toggle("show",por&&Math.min(W,H)<760);render()}
+try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}
+$("sg").innerHTML=COLORS.map(c=>`<span>${gem(c)}</span>`).join("");
+$("play").addEventListener("click",()=>{$("start").classList.add("hide");init()});
+b=Array(14).fill(4);b[6]=b[13]=0;turn=0;busy=false;over=true;
+if(MODE==="room"){$("start").classList.add("hide");build();render();say("Oyun yükleniyor…");msg({gameon:"ready"})}
+else{try{N[0]=localStorage.getItem("gameon.name")||"Sen";AV[0]=localStorage.getItem("gameon.profile")||"profil1"}catch(e){}build();render()}
+addEventListener("resize",fit);addEventListener("orientationchange",()=>setTimeout(fit,200));fit();
+</script>
+</body>
+</html>

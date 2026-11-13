@@ -1,0 +1,19 @@
+:root{--bg-base:#050a18;--bg-card:#0f1a35;--bg-card2:#111f3a;--accent:#3b82f6;--accent2:#60a5fa;--text:#e8f0ff;--text-muted:#7a9acb;--text-dim:#3d567a;
+--border:rgba(59,130,246,.2);--border2:rgba(255,255,255,.07);--gold:#f59e0b;--glow:rgba(59,130,246,.35);--radius:16px;--radius-sm:10px;color-scheme:dark}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg-base)}
+body{font-family:'Nunito',system-ui,sans-serif;color:var(--text);padding:18px 16px 32px;
+  padding-top:max(18px,env(safe-area-inset-top));
+  background:radial-gradient(ellipse 80% 40% at 50% 0,rgba(29,78,216,.2),transparent 70%) no-repeat var(--bg-base)}
+.wrap{max-width:760px;margin:0 auto}
+.back{display:none;margin-bottom:14px;color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none}
+.standalone .back{display:inline-block}
+h1{font-size:20px;font-weight:900;margin-bottom:16px}
+.av{border-radius:50%;object-fit:cover;background:#10203f;flex-shrink:0}
+.dot{width:8px;height:8px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-card);position:absolute;right:0;bottom:0;box-sizing:content-box}
+.dot.off{background:#374151}
+.btn{padding:7px 18px;border-radius:20px;border:0;font:800 11px 'Nunito',sans-serif;color:#fff;cursor:pointer;background:linear-gradient(90deg,#1d4ed8,#3b82f6)}
+.btn.gray{background:linear-gradient(90deg,#374151,#4b5563)}
+.rise{animation:rise .45s both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
