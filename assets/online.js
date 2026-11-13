@@ -1,6 +1,6 @@
 /* GameOn online: odalar, lobi (Hazır mısın?), sıra/hamle aktarımı, puanlar, arkadaşlar. Sunucu: gameon-server */
 (function(){
-const A=window.GameOnAPI,MAXP={okey:4,amiral:2,mangala:2,dortdortluk:2,tavla:2,dama:2,ludo:4},ONLINE=['mangala'];
+const A=window.GameOnAPI,MAXP={okey:4,amiral:2,mangala:2,dortdortluk:2,tavla:2,dama:2,ludo:4},ONLINE=['mangala','okey','tavla','dortdortluk','dama','ludo','amiral'];
 let room=null,seat=0,pollT=null,seq=0,rdy=false,pend=[],q=Promise.resolve(),cg=null,myPw={},poll_busy=false;
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const gname=id=>(GAMES.find(g=>g.id===id)||{}).name||id,av=a=>'profil/'+(a||'profil1')+'.webp',pn=p=>p.username?'@'+p.username:(p.first_name||'Oyuncu');
