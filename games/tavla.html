@@ -6,11 +6,15 @@
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05070d">
 <title>Tavla</title>
-<script>const GO={on:null,set(v){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end'},'*')}catch(e){}}};</script>
+<script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 <style>
 :root{color-scheme:dark;--accent:#60a5fa;--gold:#fbbf24;--line:#1e3a8a;--txt:#e6edf8}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
+body.flip #bw{transform:rotate(180deg)}
+#vs{display:flex;flex-direction:column;gap:5px;width:100%;font-size:11px;font-weight:800}
+.chip{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chip img{width:20px;height:20px;border-radius:50%}.chip.act{border-color:var(--gold);background:rgba(251,191,36,.12)}
 body{background:radial-gradient(ellipse at top,#10203f,#05070d);color:var(--txt);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -52,6 +56,7 @@ body{background:radial-gradient(ellipse at top,#10203f,#05070d);color:var(--txt)
   <div id="side">
     <b>TAVLA</b>
     <div id="rm"></div>
+    <div id="vs"></div>
     <div id="st"></div>
     <div id="sc"></div>
     <div id="dc"></div>
@@ -68,7 +73,12 @@ let S,turn=0,phase='open',rem=[],full=[],seqs=[],sel=null,busy=false,msg='',scor
 /* ---- gerçek rastgelelik: her oyun, her zar farklı (crypto) ---- */
 const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
 const die=()=>1+rnd(6);
-const qs=new URLSearchParams(location.search),MODE=qs.get('mode')||'bot',ROOM=qs.get('room')||'';
+const qs=new URLSearchParams(location.search),MODE=qs.get('mode')==='room'?'room':'bot',ROOM=qs.get('room')||'';
+let M=0,PN=['Sen','Bot'],PA=['profil1','profil1'],srng=null,lastT=-1,openUntil=0,rq=[],draining=false,ready=false;
+const post=o=>{try{parent.postMessage(o,'*')}catch(e){}},emit=ev=>{if(MODE==='room')post({gameon:'move',data:ev,next:ev.next})};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function seedRng(s){let a=s>>>0;srng=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=n=>srng?Math.floor(srng()*n):rnd(n);
 
 const X=i=>i<6?925-70*i:i<12?425-70*(i-6):i<18?75+70*(i-12):575+70*(i-18);
 const sgn=p=>p?-1:1;
@@ -77,9 +87,9 @@ const RANDOM_START=true;  /* false: klasik sabit dizilim */
 function newState(){const p=Array(24).fill(0);
  if(!RANDOM_START){p[23]=2;p[12]=5;p[7]=3;p[5]=5;p[0]=-2;p[11]=-5;p[16]=-3;p[18]=-5;return{pts:p,bar:[0,0],off:[0,0]}}
  /* adil: 15 taş 4-5 rastgele noktaya dağılır, rakip aynasını alır */
- const pr=[...Array(12).keys()];for(let i=11;i>0;i--){const j=rnd(i+1);[pr[i],pr[j]]=[pr[j],pr[i]]}
- const k=4+rnd(2);let left=15;
- for(let n=0;n<k;n++){const i=pr[n],a=rnd(2)?i:23-i,c=n===k-1?left:Math.max(Math.min(left-(k-1-n),1+rnd(5)),left-5*(k-1-n));p[a]=c;p[23-a]=-c;left-=c}
+ const pr=[...Array(12).keys()];for(let i=11;i>0;i--){const j=R(i+1);[pr[i],pr[j]]=[pr[j],pr[i]]}
+ const k=4+R(2);let left=15;
+ for(let n=0;n<k;n++){const i=pr[n],a=R(2)?i:23-i,c=n===k-1?left:Math.max(Math.min(left-(k-1-n),1+R(5)),left-5*(k-1-n));p[a]=c;p[23-a]=-c;left-=c}
  return{pts:p,bar:[0,0],off:[0,0]}}
 
 /* ================= KURALLAR ================= */
@@ -130,51 +140,61 @@ function botPlay(){const all=allSeqs(S,1,rem);
 function anim(cb){busy=true;let n=0;const g=gen;
  const iv=setInterval(()=>{
   if(g!==gen){clearInterval(iv);return}
-  if(++n>7){clearInterval(iv);const a=die(),b=die();full=a==b?[a,a,a,a]:[a,b];rem=full.slice();busy=false;render();cb()}
+  if(++n>7){clearInterval(iv);const a=die(),b=die();full=a==b?[a,a,a,a]:[a,b];rem=full.slice();busy=false;if(MODE==='room'&&turn===M)emit({t:'r',a,b});render();cb()}
   else{full=[die(),die()];rem=full.slice();render()}},70)}
 function openingAnim(){busy=true;let n=0;const g=gen;
  const iv=setInterval(()=>{
   if(g!==gen){clearInterval(iv);return}
-  if(++n>7){clearInterval(iv);busy=false;doOpening(die(),die())}
+  if(++n>7){clearInterval(iv);busy=false;const a=die(),b=die();emit({t:'o',a,b,next:a>b?0:b>a?1:undefined});doOpening(a,b)}
   else renderDice([die(),die()],[])},70)}
 function doOpening(a,b){
- msg='Açılış: Sen '+a+' · Bot '+b;renderDice([a,b],[]);
+ msg='Açılış: '+PN[0]+' '+a+' · '+PN[1]+' '+b;renderDice([a,b],[]);
  const g=gen;
- if(a===b){msg='Berabere! Zarlar tekrar atılıyor…';render();return setTimeout(()=>{if(g===gen)openingAnim()},1300)}
- turn=a>b?0:1;full=[a,b];rem=[a,b];
+ if(a===b){msg='Berabere! Zarlar tekrar atılıyor…';render();return setTimeout(()=>{if(g===gen&&(MODE!=='room'||M===0))openingAnim()},1300)}
+ turn=a>b?0:1;full=[a,b];rem=[a,b];openUntil=Date.now()+1500;
  setTimeout(()=>{
   if(g!==gen)return;
-  if(turn){phase='bot';msg='Bot başlıyor…';render();setTimeout(()=>{if(g===gen)botPlay()},700)}
-  else{seqs=allSeqs(S,0,rem);
+  if(turn!==M){phase='wait';msg=MODE==='room'?'Rakibin sırası…':'Bot başlıyor…';render();if(MODE==='bot')setTimeout(()=>{if(g===gen)botPlay()},700)}
+  else{seqs=allSeqs(S,M,rem);
    if(!seqs.length){phase='wait';msg='Açılışta oynayacak hamle yok';render();return setTimeout(endTurn,1500)}
    phase='move';msg='İki zarla başlıyorsun: bir taş seç';autoSel();render()}},1400)}
-function endTurn(){turn=1-turn;rem=[];seqs=[];sel=null;
- if(turn){phase='bot';msg='Botun sırası: zar atıyor…';render();setTimeout(botRoll,700)}
- else{phase='roll';msg='Sıra sende: zarı at';render()}}
-function humanRoll(){if(phase!=='roll'||turn||busy)return;msg='Zar atılıyor…';
- anim(()=>{seqs=allSeqs(S,0,rem);
+function endTurn(){if(MODE==='room'&&turn===M)emit({t:'n',next:1-M});turn=1-turn;rem=[];seqs=[];sel=null;
+ if(turn===M){phase='roll';msg='Sıra sende: zarı at';render()}
+ else{phase='wait';msg=MODE==='room'?'Rakibin sırası…':'Botun sırası: zar atıyor…';render();if(MODE==='bot')setTimeout(botRoll,700)}}
+function humanRoll(){if(phase!=='roll'||turn!==M||busy)return;msg='Zar atılıyor…';
+ anim(()=>{seqs=allSeqs(S,M,rem);
   if(!seqs.length){phase='wait';msg='Oynayacak hamlen yok';render();return setTimeout(endTurn,1500)}
   phase='move';msg='Bir taş seç, sonra gideceği yeri seç';autoSel();render()})}
 function autoSel(){const fs=[...new Set(seqs.map(o=>o.sq[0].f))];sel=fs.length==1?fs[0]:null}
-function doHuman(m){
- apply(S,0,m);rem.splice(rem.indexOf(m.d),1);sel=null;
- if(S.off[0]==15)return finish(0);
+function doHuman(m){emit({t:'m',m});
+ apply(S,M,m);rem.splice(rem.indexOf(m.d),1);sel=null;
+ if(S.off[M]==15)return finish(M);
  if(!rem.length)return endTurn();
- seqs=allSeqs(S,0,rem);
+ seqs=allSeqs(S,M,rem);
  if(!seqs.length){phase='wait';msg='Başka hamle kalmadı';render();return setTimeout(endTurn,1000)}
  autoSel();render()}
-function finish(w){phase='over';GO.set(false);
- const isMars=S.off[1-w]===0;
+function finish(w){phase='over';GO.set(false,[w,1-w]);
+ const isMars=S.off[1-w]===0,win=w===M;
  score[w]++;if(isMars)mars[w]++;
  render();
- $('cd').innerHTML='<h1>'+(w?'😔':'🏆')+'</h1>'+
-  '<p style="font-size:20px;font-weight:800">'+(isMars?'<span class="mars">MARS! </span>':'')+(w?'Bot kazandı':'Tebrikler, kazandın!')+'</p>'+
-  '<p>Skor — Sen '+score[0]+' · Bot '+score[1]+'<br>Mars — <span class="mars">'+mars[0]+':'+mars[1]+'</span></p>'+
-  '<button onclick="startGame()">Tekrar Oyna</button>';
+ $('cd').innerHTML='<h1>'+(win?'🏆':'😔')+'</h1>'+
+  '<p style="font-size:20px;font-weight:800">'+(isMars?'<span class="mars">MARS! </span>':'')+(win?'Tebrikler, kazandın!':esc(PN[w])+' kazandı')+'</p>'+
+  '<p>Skor — '+esc(PN[M])+' '+score[M]+' · '+esc(PN[1-M])+' '+score[1-M]+'<br>Mars — <span class="mars">'+mars[M]+':'+mars[1-M]+'</span></p>'+
+  (MODE==='room'?'<button onclick="post({gameon:\'newgame\',choice:\'bot\'})">🤖 Botlarla Oyna</button><button onclick="post({gameon:\'newgame\',choice:\'room\'})">🏠 Oda Kur</button><button onclick="$(\'ov\').className=\'\'" style="background:#1f2a44;box-shadow:none">Kapat</button>':'<button onclick="startGame()">Tekrar Oyna</button>');
  $('ov').className='on'}
 function startGame(){gen++;GO.set(true);S=newState();turn=0;phase='open';rem=[];full=[];seqs=[];sel=null;busy=false;
- msg='Açılış zarı atılıyor…';$('ov').className='';render();setTimeout(openingAnim,600)}
-
+ msg='Açılış zarı atılıyor…';$('ov').className='';render();setTimeout(()=>{if(MODE!=='room'||M===0)openingAnim()},600)}
+/* ---- oda modu: rakip hamleleri ---- */
+async function applyRemote(ev){
+ if(ev.t==='o')doOpening(ev.a,ev.b);
+ else if(ev.t==='r'){full=ev.a==ev.b?[ev.a,ev.a,ev.a,ev.a]:[ev.a,ev.b];rem=full.slice();msg='Rakip zar attı';render()}
+ else if(ev.t==='m'){apply(S,turn,ev.m);rem.splice(rem.indexOf(ev.m.d),1);if(S.off[turn]==15)return finish(turn);render()}
+ else if(ev.t==='n')endTurn()}
+async function drainR(){if(draining)return;draining=true;try{while(rq.length){while(!ready||busy||phase==='over')await new Promise(r=>setTimeout(r,100));const w=openUntil-Date.now();if(w>0)await new Promise(r=>setTimeout(r,w));await applyRemote(rq.shift());await new Promise(r=>setTimeout(r,450))}}finally{draining=false}}
+addEventListener('message',e=>{const d=e.data||{};if(e.source!==parent)return;
+ if(d.gameon==='init'){M=d.me|0;(d.players||[]).forEach((p,i)=>{PN[i]=p.username?'@'+p.username:(p.first_name||'Oyuncu');PA[i]=p.avatar||'profil1'});seedRng(d.seed);
+  document.body.classList.toggle('flip',M===1);startGame();ready=true;drainR()}
+ else if(d.gameon==='remote'&&d.data){rq.push(d.data);drainR()}});
 /* ================= ÇİZİM (wood grain: filtre yok, vektör desen) ================= */
 function pts(i,fill,st){const cx=X(i),t=i>=12;return '<polygon points="'+(cx-35)+','+(t?30:610)+' '+(cx+35)+','+(t?30:610)+' '+cx+','+(t?290:350)+'" fill="'+fill+'" '+(st||'')+'/>'}
 function drawBg(){
@@ -195,7 +215,7 @@ function renderDice(f,r){const rr=r.slice();
  $('dc').innerHTML=f.map(v=>{const i=rr.indexOf(v),u=i<0;if(!u)rr.splice(i,1);
   return '<div class="die'+(u?' u':'')+'">'+[0,1,2,3,4,5,6,7,8].map(k=>'<i class="'+(PIPS[v-1].includes(k)?'p':'')+'"></i>').join('')+'</div>'}).join('')}
 function render(){if(!S)return;
- const moves=phase==='move'&&!turn?seqs.map(o=>o.sq[0]):[];
+ const moves=phase==='move'&&turn===M?seqs.map(o=>o.sq[0]):[];
  let h='<defs><radialGradient id="cw" cx=".35" cy=".35"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#cdb07a"/></radialGradient><radialGradient id="cb" cx=".35" cy=".35"><stop offset="0" stop-color="#6a4630"/><stop offset="1" stop-color="#150a05"/></radialGradient></defs>';
  if(moves.length){
   for(const f of new Set(moves.map(m=>m.f))){const on=f===sel,c=on?'rgba(74,222,128,.4)':'rgba(250,204,21,.25)';
@@ -211,9 +231,11 @@ function render(){if(!S)return;
  h+='<rect data-p="b" x="460" y="30" width="80" height="580" fill="transparent"/><rect data-p="o" x="975" y="30" width="65" height="580" fill="transparent"/>';
  $('fg').innerHTML=h;
  $('st').textContent=msg;
- $('sc').innerHTML='Sen '+score[0]+' · Bot '+score[1]+((mars[0]||mars[1])?' · <span class="m">Mars '+mars[0]+':'+mars[1]+'</span>':'');
+ $('sc').innerHTML=score[M]+' - '+score[1-M]+((mars[0]||mars[1])?' · <span class="m">Mars '+mars[M]+':'+mars[1-M]+'</span>':'');
+ $('vs').innerHTML=[M,1-M].map(i=>'<div class="chip'+(turn===i&&phase!=='over'?' act':'')+'"><img src="../profil/'+PA[i]+'.webp" alt="">'+esc(PN[i])+'</div>').join('');
+ if(MODE==='room'&&lastT!==turn){lastT=turn;post({gameon:'turn',seat:turn})}
  renderDice(full,rem);
- $('roll').style.display=phase==='roll'&&!turn&&!busy?'block':'none'}
+ $('roll').style.display=phase==='roll'&&turn===M&&!busy?'block':'none'}
 
 /* ================= YÖNELİM ================= */
 function checkOrient(){const portrait=innerHeight>innerWidth;
@@ -224,7 +246,7 @@ try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landsc
 /* ================= OLAYLAR ================= */
 $('roll').onclick=humanRoll;
 $('fg').addEventListener('click',e=>{
- const el=e.target.closest('[data-p]');if(!el||turn||phase!=='move'||busy)return;
+ const el=e.target.closest('[data-p]');if(!el||turn!==M||phase!=='move'||busy)return;
  const k=el.dataset.p,key=k==='b'?-1:k==='o'?'o':+k,moves=seqs.map(o=>o.sq[0]);
  if(sel!==null){const m=moves.find(m=>m.f===sel&&m.t===key);if(m)return doHuman(m)}
  if(moves.some(m=>m.f===key)){sel=key;return render()}
@@ -235,7 +257,9 @@ let rz;function onResize(){clearTimeout(rz);rz=setTimeout(checkOrient,100)}
 addEventListener('resize',onResize);addEventListener('orientationchange',()=>setTimeout(onResize,80));
 
 if(MODE==='room'&&ROOM)$('rm').textContent='🏠 Oda: '+ROOM;
-drawBg();checkOrient();startGame();
+drawBg();checkOrient();
+if(MODE==='room'){post({gameon:'ready'});S=newState();render()}
+else{try{PN[0]=localStorage.getItem('gameon.name')||'Sen';PA[0]=localStorage.getItem('gameon.profile')||'profil1'}catch(e){}ready=true;startGame()}
 </script>
 </body>
 </html>

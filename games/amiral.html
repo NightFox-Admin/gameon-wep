@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<script>const GO={on:null,set(v){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end'},'*')}catch(e){}}};</script>
+<script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -54,6 +54,8 @@ button:disabled{opacity:.4;cursor:default}
 <body>
 <div id="app"></div>
 <script>
+const ROOM=new URLSearchParams(location.search).get('mode')==='room';let M=0,PA=['profil1','profil1'],RK,lastT=-1,rq=[],started=false;
+const post=o=>{try{parent.postMessage(o,'*')}catch(e){}},emit=ev=>{if(ROOM)post({gameon:'move',data:ev,next:ev.next})},esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])),pav=i=>`<img src="../profil/${PA[i]}.webp" alt="" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:5px">`;
 const $=s=>document.querySelector(s);
 const SH=[["Uçak Gemisi",5],["Zırhlı",4],["Kruvazör",3],["Denizaltı",3],["Muhrip",2]];
 const L="ABCDEFGHIJ";
@@ -92,7 +94,7 @@ function boardHTML(p,mode,act){
 const fleetHTML=p=>`<div class="fleet">${p.ships.map((s,i)=>`<span class="${s&&s.hits>=s.len?"x":""}">${SH[i][0]} (${SH[i][1]})</span>`).join("")}</div>`;
 
 /* ---- Ekranlar ---- */
-function render(){let h="";const o=G.o;GO.set(G.phase!=="menu"&&!G.over);
+function render(){let h="";const o=G.o;GO.set(G.phase!=="menu"&&!G.over,RK);if(ROOM){const sd=G.phase==="battle"&&!G.over?(G.cur===0?M:1-M):M;if(sd!==lastT){lastT=sd;post({gameon:"turn",seat:sd})}}
  if(G.phase==="menu"){h=`<h1>⚓ AMİRAL BATTI</h1><p class="sub">Klasik 10×10 deniz savaşı</p>
  <div class="card"><h2>Oyun modu</h2><div class="seg"><button class="${o.mode==="bot"?"":"sec"}" data-a="mode" data-v="bot">🤖 Bilgisayara karşı</button></div>
  <label>Oyuncu 1<input type="text" id="n1" value="${o.n1}" maxlength="14"></label>
@@ -107,15 +109,16 @@ function render(){let h="";const o=G.o;GO.set(G.phase!=="menu"&&!G.over);
  <div><button class="sec" data-a="rot">↻ Yön: ${G.v?"Dikey":"Yatay"}</button><button class="sec" data-a="rand">🎲 Rastgele</button><button class="sec" data-a="clear">Temizle</button></div>
  <div class="boards">${boardHTML(P,"own",true)}</div>
  <button data-a="ready" ${left?"disabled":""}>Hazırım ✔</button>`}
- else{const V=G.o.mode==="bot"?0:G.cur,me=G.p[V],en=G.p[1-V];const inter=!G.lock&&!G.wait&&!G.over&&G.cur===V;
+ else if(G.phase==="wait"){h=`<h2>⏳ Rakip filosunu yerleştiriyor…</h2><p class="sub">Savaş, ikiniz de hazır olunca başlar.</p>`}
+ else{const V=G.o.mode==="bot"||ROOM?0:G.cur,me=G.p[V],en=G.p[1-V];const inter=!G.lock&&!G.wait&&!G.over&&G.cur===V;
  h=`<h2>${G.over?"Oyun bitti":G.lock?"⏳ Rakip nişan alıyor…":`🎯 Sıra: ${G.p[G.cur].name}`}</h2>
  <div class="msg">${G.msg||"Düşman sularına ateş et!"}</div>
  ${G.wait&&!G.over?`<button data-a="pass">Sırayı ${G.p[1-G.cur].name}’e ver →</button>`:""}
- <div class="boards"><div><h2>Düşman suları</h2>${boardHTML(en,G.over?"all":"enemy",inter)}${fleetHTML(en)}</div>
- <div><h2>Filon</h2>${boardHTML(me,"own",false)}${fleetHTML(me)}</div></div>
- <div class="log">${(G.log||[]).slice(-3).reverse().join("<br>")}</div><button class="sec" data-a="menu">Menü</button>`}
+ <div class="boards"><div><h2>${ROOM?pav(1)+esc(en.name)+" suları":"Düşman suları"}</h2>${boardHTML(en,G.over?"all":"enemy",inter)}${fleetHTML(en)}</div>
+ <div><h2>${ROOM?pav(0)+esc(me.name):"Filon"}</h2>${boardHTML(me,"own",false)}${fleetHTML(me)}</div></div>
+ <div class="log">${(G.log||[]).slice(-3).reverse().join("<br>")}</div>${ROOM?"":`<button class="sec" data-a="menu">Menü</button>`}`}
  if(G.pass)h+=`<div class="ov"><h1>${G.pass.t}</h1><p class="sub">${G.pass.s}</p><button data-a="ok">${G.pass.b}</button></div>`;
- if(G.over)h+=`<div class="ov win" id="win"><h1>🏆 ${G.p[G.cur].name} kazandı!</h1><p class="sub">Düşman filosu battı.</p><button data-a="menu">Yeni oyun</button><button class="sec" data-a="hide">Tahtaları gör</button></div>`;
+ if(G.over)h+=`<div class="ov win" id="win"><h1>🏆 ${G.p[G.cur].name} kazandı!</h1><p class="sub">Düşman filosu battı.</p>${ROOM?`<button data-a="ng-room">🏠 Oda Kur</button><button data-a="ng-bot">🤖 Botlarla Oyna</button>`:`<button data-a="menu">Yeni oyun</button><button data-a="ng-room">🏠 Oda Kur</button>`}<button class="sec" data-a="hide">Tahtaları gör</button></div>`;
  $("#app").innerHTML=h}
 
 /* ---- Olaylar ---- */
@@ -130,6 +133,8 @@ document.addEventListener("click",e=>{
   if(a==="rot"){G.v=!G.v;return render()}
   if(a==="rand"){randomPlace(G.p[G.pl]);G.sel=null;return render()}
   if(a==="clear"){G.p[G.pl].ships=Array(5).fill(null);G.sel=0;return render()}
+  if(a==="ng-room"||a==="ng-bot")return post({gameon:"newgame",choice:a.slice(3)});
+  if(a==="ready"&&ROOM){G.rdyMe=true;emit({free:1,t:"rd"});if(G.rdyOpp)return startBattle();G.phase="wait";return render()}
   if(a==="ready"){if(G.o.mode==="bot"){randomPlace(G.p[1]);return startBattle()}
    if(G.pl===0){G.pl=1;G.sel=0;G.pass={t:G.p[0].name+" tamam",s:`Cihazı ${G.p[1].name}’e ver. Ekranı görmemeli!`,b:G.p[1].name+" hazır"};return render()}
    return startBattle()}
@@ -151,14 +156,16 @@ document.addEventListener("mouseover",e=>{const c=e.target.closest(".c");if(!c||
 document.addEventListener("keydown",e=>{if((e.key==="r"||e.key==="R")&&G.phase==="place"&&!/INPUT/.test(e.target.tagName)){G.v=!G.v;render()}});
 
 /* ---- Savaş mantığı ---- */
-function startBattle(){G.phase="battle";G.cur=0;G.lock=false;G.wait=false;G.msg="";G.log=[];G.pass=G.o.mode==="friend"?{t:G.p[0].name,s:"Savaş başlıyor! İlk atış sende.",b:"Ateşe hazırım"}:null;render()}
+function startBattle(){G.phase="battle";G.cur=ROOM&&M===1?1:0;G.lock=ROOM&&M===1;G.wait=false;G.msg="";G.log=[];G.pass=G.o.mode==="friend"?{t:G.p[0].name,s:"Savaş başlıyor! İlk atış sende.",b:"Ateşe hazırım"}:null;render()}
 function shot(d,x,y){const att=G.p[G.cur],co=L[x]+(y+1);d.grid[y][x]=1;let hit=false,sunk=null;
  const i=occ(d)[y][x];
  if(i>=0){hit=true;d.grid[y][x]=2;const s=d.ships[i];s.hits++;if(s.hits>=s.len)sunk=SH[i][0]}
  G.msg=`${att.name} → ${co}: `+(sunk?`💥 ${sunk} battı!`:hit?"🔥 İSABET!":"💦 Iska.");G.log.push(G.msg);
  if(d.ships.every(s=>s.hits>=s.len)){G.over=true;G.lock=false;G.wait=false}
  return{hit,sunk}}
-function humanShot(x,y){const d=G.p[1-G.cur];if(d.grid[y][x])return;const r=shot(d,x,y);
+function humanShot(x,y){const d=G.p[1-G.cur];if(d.grid[y][x])return;
+ if(ROOM){emit({t:"s",x,y,next:1-M});G.lock=true;G.msg="Atış: "+L[x]+(y+1)+"…";return render()}
+ const r=shot(d,x,y);
  if(G.over)return render();
  if(r.hit&&G.o.extra){G.msg+=" Tekrar at!";return render()}
  if(G.o.mode==="bot"){G.cur=1;G.lock=true;render();setTimeout(botTurn,1100)}else{G.wait=true;render()}}
@@ -177,7 +184,21 @@ function botPick(d){const g=d.grid,free=[],sunk=new Set(),hits=[];
   cs.forEach(([a,b])=>{if(!g[b][a])sc[b][a]+=w})}});
  let best=-1,pool=[];free.forEach(([x,y])=>{const v=sc[y][x];if(v>best){best=v;pool=[[x,y]]}else if(v===best)pool.push([x,y])});
  return pool.length?rnd(pool):rnd(free)}
-render();
+/* ---- oda modu ---- */
+function onResult(ev){const d=G.p[1],co=L[ev.x]+(ev.y+1);d.grid[ev.y][ev.x]=ev.hit?2:1;if(ev.sunk)d.ships[ev.i]={x:ev.sx,y:ev.sy,v:ev.v,len:ev.len,hits:ev.len};
+ G.msg=`${G.p[0].name} → ${co}: `+(ev.sunk?`💥 ${ev.sunk} battı!`:ev.hit?"🔥 İSABET!":"💦 Iska.");G.log.push(G.msg);
+ if(ev.over){G.over=true;G.lock=false;G.cur=0;RK=[M,1-M]}else{G.cur=1;G.lock=true}render()}
+function onShot(ev){const me=G.p[0];if(me.grid[ev.y][ev.x])return;G.cur=1;const i=occ(me)[ev.y][ev.x],r=shot(me,ev.x,ev.y),s=i>=0?me.ships[i]:null;
+ emit({free:1,t:"r",x:ev.x,y:ev.y,hit:r.hit,sunk:r.sunk,i,sx:s&&s.x,sy:s&&s.y,v:s&&s.v,len:s&&s.len,over:G.over});
+ if(G.over)RK=[1-M,M];else{G.cur=0;G.lock=false}render()}
+function handle(ev){if(ev.t==="rd"){G.rdyOpp=true;if(G.rdyMe&&G.phase==="wait")startBattle()}else if(ev.t==="s")onShot(ev);else if(ev.t==="r")onResult(ev)}
+addEventListener("message",e=>{const d=e.data||{};if(e.source!==parent)return;
+ if(d.gameon==="init"){M=d.me|0;const nm=p=>p.username?"@"+p.username:(p.first_name||"Oyuncu"),pl=d.players||[];
+  PA=[(pl[M]||{}).avatar||"profil1",(pl[1-M]||{}).avatar||"profil1"];G.o.mode="room";G.o.touch=false;G.o.extra=false;
+  G.p=[newP(nm(pl[M]||{}),false),newP(nm(pl[1-M]||{}),false)];G.phase="place";G.pl=0;G.sel=0;G.v=false;G.over=false;G.lock=false;G.wait=false;G.msg="";G.log=[];G.pass=null;G.rdyMe=G.rdyOpp=false;
+  started=true;render();rq.splice(0).forEach(handle)}
+ else if(d.gameon==="remote"&&d.data){started?handle(d.data):rq.push(d.data)}});
+if(ROOM)post({gameon:"ready"});else{try{G.o.n1=localStorage.getItem("gameon.name")||"Oyuncu 1"}catch(e){}render()}
 </script>
 </body>
 </html>

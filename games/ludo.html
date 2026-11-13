@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="tr"><head>
-<script>const GO={on:null,set(v){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end'},'*')}catch(e){}}};</script>
+<script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ludo</title>
@@ -35,6 +35,9 @@ button:active{transform:translateY(3px);box-shadow:0 1px 0 #7a5a24}button:focus-
 <div id="rot"><div>📱↻<br>Oyun dikey oynanır.<br>Telefonunu dik tut.</div></div>
 <script>
 const $=s=>document.querySelector(s),st=$('#stage'),cv=$('#cv'),ctx=cv.getContext('2d');
+const ROOM=new URLSearchParams(location.search).get('mode')==='room';let M=0,PA=['profil1','profil1','profil1','profil1'],rq=[],rqW=null,lastP=-1,lastTurn=-1;
+const post=o=>{try{parent.postMessage(o,'*')}catch(e){}},emit=ev=>{if(ROOM)post({gameon:'move',data:ev,next:ev.next})},esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nextEv=t=>new Promise((res,rej)=>{const g=gen;(function chk(){if(g!==gen)return rej();while(rq.length&&rq[0].t==='n')rq.shift();if(rq.length&&rq[0].t===t)return res(rq.shift());setTimeout(chk,80)})()});
 const BX=20,BY=15,CS=40,HUM=3,NAMES=['Ali','Zeynep','Mehmet','Sen'],rnd=n=>Math.floor(Math.random()*n);
 const COL=[{m:'#d94a3d',l:'#ff9a8c',d:'#8f231b',p:'#f6c9c2'},{m:'#38a35a',l:'#8be0a3',d:'#1b6a37',p:'#c2ecce'},{m:'#e9b82c',l:'#ffe58a',d:'#a8780a',p:'#fbe9b0'},{m:'#3b78d9',l:'#8dbbff',d:'#1b4a9a',p:'#c4d8f7'}];
 // ---- board geometry: 52-cell loop, 6-cell home columns, base spots
@@ -107,19 +110,19 @@ async function dieAnim(v){const d=die,rs=(Math.random()-.5)*.5;await tw(1000,u=>
 // ---- turn loop
 async function loop(){try{while(!over){const p=turn,h=isH(p);ui(h?(HS.length>1?CN[p]+' sırası, zarı at':'Sıra sende, zarı at'):NAMES[p]+' zar atıyor…');
   if(h){phase='roll';ui();await new Promise(r=>rollGo=r)}else await wait(900);
-  phase='rolling';ui();const v=1+rnd(6);await dieAnim(v);sixes=v===6?sixes+1:0;
-  if(sixes===3){ui('Üç kez altı geldi, sıra geçti');sixes=0;await wait(1200);turn=nxt(p);continue}
+  phase='rolling';ui();const v=(ROOM&&!h)?(await nextEv('r')).v:1+rnd(6);if(ROOM&&h)emit({t:'r',v});await dieAnim(v);sixes=v===6?sixes+1:0;
+  if(sixes===3){ui('Üç kez altı geldi, sıra geçti');sixes=0;await wait(1200);turn=nxt(p);if(ROOM&&h)emit({t:'n',next:turn});continue}
   const mv=legal(p,v);let bonus=false;
   if(!mv.length){ui(who(p)+': '+v+', oynanacak taş yok');await wait(1100)}
   else{let t;ui(who(p)+': '+v);
-   if(h){if(mv.length===1){await wait(550);t=mv[0]}else{phase='pick';hl=mv;ui(who(p)+': '+v+' · oynayacağın taşı seç');t=await new Promise(r=>pickGo=r);hl=[]}}else{await wait(650);t=botPick(p,v,mv)}
+   if(h){if(mv.length===1){await wait(550);t=mv[0]}else{phase='pick';hl=mv;ui(who(p)+': '+v+' · oynayacağın taşı seç');t=await new Promise(r=>pickGo=r);hl=[];if(ROOM)emit({t:'p',k:t.k})}}else{await wait(650);t=ROOM?(mv.length===1?mv[0]:T[p][(await nextEv('p')).k]):botPick(p,v,mv)}
    phase='move';ui();bonus=await moveTok(t,v);
-   if(T[p].every(x=>x.p===57)){GO.set(false);over=true;$('#mt').textContent=h&&HS.length===1?'Tebrikler, kazandın!':who(p)+' kazandı';$('#modal').classList.add('on');ui();return}}
+   if(T[p].every(x=>x.p===57)){const sm=i=>T[i].reduce((a,x)=>a+x.p,0);GO.set(false,ACT.slice().sort((a,b)=>a===p?-1:b===p?1:sm(b)-sm(a)));over=true;$('#mt').textContent=h&&HS.length===1?'Tebrikler, kazandın!':who(p)+' kazandı';$('#modal').classList.add('on');ui();return}}
   if(v===6||bonus){if(mv.length)ui(who(p)+(v===6?' altı attı, tekrar atıyor':' bonus zar atıyor'))}else turn=nxt(p);
-  await wait(300)}}catch(e){}}
-function ui(m){if(m!==undefined)$('#msg').textContent=m;[0,1,2,3].forEach(i=>{const e=$('#pl'+i);if(!e)return;e.classList.toggle('act',turn===i&&!over);e.querySelector('span').textContent=T[i].filter(t=>t.p===57).length+'/4'});$('#roll').classList.toggle('on',phase==='roll'&&isH(turn)&&!over)}
-function renderPls(){$('#pls').innerHTML=ACT.map(i=>`<div class=pl id=pl${i}><i style='background:${COL[i].m}'></i><b>${who(i)}</b><span>0/4</span></div>`).join('')}
-function newGame(){GO.set(true);gen++;$('#modal').classList.remove('on');ACT=({2:[1,3],3:[0,1,3],4:[0,1,2,3]})[cfg.n];HS=cfg.local?ACT.slice():[3];renderPls();T=[0,1,2,3].map(i=>ACT.includes(i)?[0,1,2,3].map(k=>({i,k,p:0,x:BS[i][k][0],y:BS[i][k][1],z:0,free:1})):[]);layout();turn=3;sixes=0;over=false;phase='';hl=[];die.face=1;ui('');loop()}
+  if(ROOM&&h)emit({t:'n',next:turn});await wait(300)}}catch(e){}}
+function ui(m){if(m!==undefined)$('#msg').textContent=m;if(ROOM&&lastTurn!==turn&&!over){lastTurn=turn;post({gameon:'turn',seat:turn})}[0,1,2,3].forEach(i=>{const e=$('#pl'+i);if(!e)return;e.classList.toggle('act',turn===i&&!over);e.querySelector('span').textContent=T[i].filter(t=>t.p===57).length+'/4'});$('#roll').classList.toggle('on',phase==='roll'&&isH(turn)&&!over)}
+function renderPls(){$('#pls').innerHTML=ACT.map(i=>`<div class=pl id=pl${i}><i style='background:${COL[i].m}'></i><b>${ROOM?`<img src=../profil/${PA[i]}.webp style=width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:4px>`+esc(NAMES[i]):who(i)}</b><span>0/4</span></div>`).join('')}
+function newGame(){GO.set(true);gen++;$('#modal').classList.remove('on');ACT=({2:[1,3],3:[0,1,3],4:[0,1,2,3]})[cfg.n];HS=ROOM?[M]:(cfg.local?ACT.slice():[3]);renderPls();T=[0,1,2,3].map(i=>ACT.includes(i)?[0,1,2,3].map(k=>({i,k,p:0,x:BS[i][k][0],y:BS[i][k][1],z:0,free:1})):[]);layout();turn=ROOM?0:3;sixes=0;over=false;rq=[];phase='';hl=[];die.face=1;ui('');loop()}
 
 $('#roll').onclick=()=>{if(phase==='roll'&&isH(turn)&&rollGo){phase='rolling';rollGo()}};
 cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*640,y=(e.clientY-r.top)/r.height*720;
@@ -130,5 +133,12 @@ $('#go').onclick=()=>{$('#setup').classList.remove('on');newGame()};$('#nb').onc
 // ---- Telegram Mini App
 const TG=(()=>{try{return parent.Telegram&&parent.Telegram.WebApp}catch(e){return null}})();
 try{screen.orientation.lock('portrait').catch(()=>{})}catch(e){}
-fit();newGame();GO.set(false);requestAnimationFrame(frame);$('#setup').classList.add('on');
+addEventListener('message',e=>{const d=e.data||{};if(e.source!==parent)return;
+ if(d.gameon==='init'){M=d.me|0;(d.players||[]).forEach((p,i)=>{NAMES[i]=p.username?'@'+p.username:(p.first_name||'Oyuncu');PA[i]=p.avatar||'profil1'});cfg.n=4;cfg.local=false;newGame()}
+ else if(d.gameon==='remote'&&d.data)rq.push(d.data)});
+(function(){const b=$('#mb');b.textContent='🏠 Oda Kur';b.onclick=()=>post({gameon:'newgame',choice:'room'});if(ROOM){const x=document.createElement('button');x.textContent='🤖 Botlarla Oyna';x.onclick=()=>post({gameon:'newgame',choice:'bot'});b.after(x)}
+ $('#nb').onclick=()=>{if(ROOM&&!over)return ui('Oyun bitince yeni oyun açabilirsin');if(ROOM){$('#mt').textContent='Yeni oyun';$('#modal').classList.add('on')}else $('#setup').classList.add('on')}})();
+fit();requestAnimationFrame(frame);
+if(ROOM){ACT=[0,1,2,3];T=[0,1,2,3].map(i=>[0,1,2,3].map(k=>({i,k,p:0,x:BS[i][k][0],y:BS[i][k][1],z:0,free:1})));layout();turn=0;over=true;post({gameon:'ready'})}
+else{try{NAMES[3]=localStorage.getItem('gameon.name')||'Sen'}catch(e){}newGame();GO.set(false);$('#setup').classList.add('on')}
 </script></body></html>
