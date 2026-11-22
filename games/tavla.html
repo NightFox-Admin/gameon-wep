@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
+<script>(function(){try{if(localStorage.getItem('gameon.sound')==='0'){const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d){if(typeof AudioDestinationNode!=='undefined'&&d instanceof AudioDestinationNode)return d;return c.apply(this,arguments)};const p=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){this.muted=true;return p.apply(this,arguments)}}}catch(e){}})();</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
@@ -180,7 +182,7 @@ function finish(w){phase='over';GO.set(false,[w,1-w]);
  $('cd').innerHTML='<h1>'+(win?'🏆':'😔')+'</h1>'+
   '<p style="font-size:20px;font-weight:800">'+(isMars?'<span class="mars">MARS! </span>':'')+(win?'Tebrikler, kazandın!':esc(PN[w])+' kazandı')+'</p>'+
   '<p>Skor — '+esc(PN[M])+' '+score[M]+' · '+esc(PN[1-M])+' '+score[1-M]+'<br>Mars — <span class="mars">'+mars[M]+':'+mars[1-M]+'</span></p>'+
-  (MODE==='room'?'<button onclick="post({gameon:\'newgame\',choice:\'bot\'})">🤖 Botlarla Oyna</button><button onclick="post({gameon:\'newgame\',choice:\'room\'})">🏠 Oda Kur</button><button onclick="$(\'ov\').className=\'\'" style="background:#1f2a44;box-shadow:none">Kapat</button>':'<button onclick="startGame()">Tekrar Oyna</button>');
+  '<button onclick="$(\'ov\').className=\'\'">Kapat</button>';
  $('ov').className='on'}
 function startGame(){gen++;GO.set(true);S=newState();turn=0;phase='open';rem=[];full=[];seqs=[];sel=null;busy=false;
  msg='Açılış zarı atılıyor…';$('ov').className='';render();setTimeout(()=>{if(MODE!=='room'||M===0)openingAnim()},600)}

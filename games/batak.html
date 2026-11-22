@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<script>(function(){try{if(localStorage.getItem('gameon.sound')==='0'){const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d){if(typeof AudioDestinationNode!=='undefined'&&d instanceof AudioDestinationNode)return d;return c.apply(this,arguments)}}}catch(e){}})();</script>
+<script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Batak</title>
+<style>
+:root{color-scheme:dark;--cw:clamp(52px,16vw,80px);--ink:#eaf2ff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation;
+ background:#0a1a3a url(../assets/batak/masa-telefon.webp) center/cover no-repeat}
+@media (min-aspect-ratio:1/1){body{background-image:url(../assets/batak/masa-tablet.webp)}}
+@media (min-aspect-ratio:3/2){body{background-image:url(../assets/batak/masa-pc.webp)}}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 45%,#0000 20%,#000a 100%);pointer-events:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
+#info{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:42px 8px 0;font-size:12px;font-weight:800}
+#info span{background:#000a;border:1px solid #fde04788;border-radius:999px;padding:3px 10px;white-space:nowrap}
+#opps{display:flex;justify-content:space-around;gap:6px;padding:6px 6px 0}
+.opp{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;flex:1;max-width:34%}
+.pl{display:flex;align-items:center;gap:6px;padding:3px 9px 3px 3px;border-radius:999px;background:rgba(0,0,0,.55);border:2px solid transparent;max-width:100%}
+.pl img{width:28px;height:28px;border-radius:50%;object-fit:cover;flex:none}
+.pl b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl i{font-style:normal;font-size:11px;font-weight:800;background:#fde047;color:#111;border-radius:999px;padding:1px 7px;flex:none}
+.pl em{font-style:normal;font-size:11px;font-weight:800;color:#93c5fd;flex:none}
+.opp.act .pl,#me.act .pl{border-color:#fde047;box-shadow:0 0 14px #fde047aa}
+.fan{display:flex;height:calc(var(--cw)*.62);align-items:flex-end;justify-content:center;max-width:100%;overflow:hidden}
+.fan img{width:calc(var(--cw)*.36);margin-left:calc(var(--cw)*-.2);filter:drop-shadow(0 2px 3px #0008)}.fan img:first-child{margin-left:0}
+.fan .cn{align-self:center;margin-left:6px;background:#000b;border:1px solid #fde047;border-radius:999px;font:800 11px system-ui;padding:1px 7px;flex:none}
+#felt{flex:1;min-height:0;position:relative;margin:4px 0}
+#deck{position:absolute;left:5%;top:50%;transform:translateY(-50%);width:calc(var(--cw)*.8);opacity:.95}
+#deck img{width:100%;display:block;filter:drop-shadow(0 6px 8px #000a)}
+#deck:after{content:attr(data-n);position:absolute;right:-6px;top:-8px;background:#000c;border:1px solid #fde047;border-radius:999px;font:800 11px system-ui;padding:2px 7px;white-space:nowrap}
+.tc{position:absolute;width:calc(var(--cw)*.95);filter:drop-shadow(0 5px 8px #000b);animation:drop .25s ease-out}
+.tc.w{outline:3px solid #fde047;border-radius:8px}
+.p0{left:50%;bottom:4%;transform:translateX(-50%) rotate(-3deg)}.p1{right:14%;top:50%;transform:translateY(-50%) rotate(8deg)}
+.p2{left:50%;top:4%;transform:translateX(-50%) rotate(4deg)}.p3{left:14%;top:50%;transform:translateY(-50%) rotate(-8deg)}
+@keyframes drop{from{opacity:0;scale:1.3}}
+#status{text-align:center;font-size:13px;font-weight:800;min-height:18px;padding:2px 8px;text-shadow:0 1px 4px #000}
+#bar{display:flex;justify-content:center;gap:8px;min-height:46px;align-items:center;flex-wrap:wrap;padding:0 8px}
+.rb{border:0;border-radius:50%;width:42px;height:42px;font-size:20px;color:#fff;cursor:pointer;flex:none;box-shadow:0 4px 0 #0006;background:linear-gradient(#3b82f6,#1d4ed8)}
+.bb{border:0;border-radius:10px;min-width:34px;padding:9px 6px;font:900 14px system-ui;color:#111;background:linear-gradient(#fde047,#d4a017);box-shadow:0 3px 0 #7c5a00;cursor:pointer}
+.bb:disabled{opacity:.25;box-shadow:none}.bb.pas{background:linear-gradient(#ef4444,#b91c1c);color:#fff;padding:9px 14px}
+.sb{width:54px;height:54px;border-radius:14px;border:3px solid #fff8;font-size:30px;cursor:pointer;background:#fff;box-shadow:0 4px 0 #0006}
+#me{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+#hand{display:flex;justify-content:safe center;align-items:flex-end;overflow-x:auto;width:100%;padding:16px 14px 8px;min-height:calc(var(--cw)*1.5 + 24px);scrollbar-width:none}
+#hand::-webkit-scrollbar{display:none}
+.card{flex:none;width:var(--cw);margin-left:calc(var(--cw)*-.58);filter:drop-shadow(0 3px 5px #000a);transition:transform .15s;cursor:pointer}
+.card:first-child{margin-left:0}.card.ok{transform:translateY(-14px)}.card.no{filter:brightness(.5) drop-shadow(0 3px 5px #000a)}
+.bub{position:absolute;z-index:20;left:50%;transform:translateX(-50%);top:-6px;max-width:200px;background:#fff;color:#111;border-radius:14px;padding:6px 10px;font:700 13px system-ui;box-shadow:0 4px 12px #0008;animation:pop .2s ease-out;pointer-events:none;word-break:break-word;text-align:center}
+.bub:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%) rotate(45deg);width:12px;height:12px;background:inherit}
+.bub.stk{background:transparent;box-shadow:none;padding:0}.bub.stk:after{display:none}.bub.stk img{width:150px;display:block;filter:drop-shadow(0 4px 8px #000a)}
+.bub.pass{background:#fde047;font-weight:900;letter-spacing:1px}
+#me .bub{top:-34px}
+@keyframes pop{from{transform:translateX(-50%) scale(.6);opacity:0}}
+#chat{position:absolute;left:0;right:0;bottom:0;z-index:40;background:#0b1226f2;border-top:1px solid #3b82f655;border-radius:18px 18px 0 0;padding:10px 10px calc(10px + env(safe-area-inset-bottom));display:none;flex-direction:column;gap:8px}
+#chat.on{display:flex}
+#stk{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}#stk::-webkit-scrollbar{display:none}
+#stk img{height:42px;flex:none;border-radius:10px;cursor:pointer;filter:drop-shadow(0 2px 4px #0008)}#stk.cd img{opacity:.4}
+#emo{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}#emo button{flex:none;border:0;background:#1b2a4a;border-radius:10px;font-size:20px;padding:4px 8px}
+#crow{display:flex;gap:8px}
+#cin{flex:1;min-width:0;border:1px solid #3b82f666;border-radius:12px;background:#10203f;color:#fff;padding:10px;font:600 15px system-ui;outline:0}
+#csend{border:0;border-radius:12px;padding:0 14px;min-width:74px;font:800 14px system-ui;color:#fff;background:linear-gradient(#3b82f6,#1d4ed8)}#csend:disabled{background:#334155}
+#cx{position:absolute;right:10px;top:-34px;border:0;background:#0b1226;color:#fff;border-radius:12px;padding:6px 12px;font:800 12px system-ui}
+#toast{position:fixed;left:50%;top:36%;transform:translateX(-50%);z-index:70;background:#000c;color:#fff;font:800 14px system-ui;padding:8px 16px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;max-width:80vw}#toast.on{opacity:1}
+#ov{position:fixed;inset:0;z-index:65;background:#000c;display:none;align-items:center;justify-content:center;padding:18px}#ov.on{display:flex}
+.ecard{background:linear-gradient(#14213d,#0a1020);border:1px solid #1e3a8a;border-radius:20px;padding:18px;width:100%;max-width:360px;text-align:center}
+.ecard h1{font-size:22px;margin-bottom:10px}
+.rk{display:flex;align-items:center;gap:8px;background:#ffffff10;border-radius:12px;padding:6px 10px;margin-bottom:6px;text-align:left;font-weight:800;font-size:13px}
+.rk img{width:28px;height:28px;border-radius:50%}.rk span{margin-left:auto;color:#fde047;font-size:12px;text-align:right}
+.ecard button{display:block;width:100%;margin-top:8px;padding:12px;border-radius:12px;border:0;font:800 15px system-ui;color:#fff;background:linear-gradient(#3b82f6,#1d4ed8);cursor:pointer}
+.ecard small{display:block;color:#9fb4d8;margin-top:6px;font-size:12px}
+@media (orientation:landscape) and (max-height:520px){:root{--cw:clamp(38px,9.5vh,54px)}#info{padding-top:4px}#hand{padding:6px 14px 2px;min-height:calc(var(--cw)*1.5 + 4px)}#bar{min-height:34px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="info"></div>
+  <div id="opps"></div>
+  <div id="felt"><div id="deck" data-n=""><img src="../assets/batak/arka.webp" alt="deste"></div></div>
+  <div id="status">Oyun yükleniyor…</div>
+  <div id="bar"><button class="rb" id="cbtn">💬</button><span id="ctl"></span></div>
+  <div id="me"><div class="pl" id="mepl"></div><div id="hand"></div></div>
+</div>
+<div id="chat"><button id="cx">Kapat ✕</button><div id="stk"></div><div id="emo"></div><div id="crow"><input id="cin" maxlength="80" placeholder="Mesaj yaz…" autocomplete="off"><button id="csend">Gönder</button></div></div>
+<div id="toast"></div>
+<div id="ov"><div class="ecard" id="ecard"></div></div>
+<script>
+const $=id=>document.getElementById(id);
+const SN=['maca','kupa','karo','sinek'],SY=['♠','♥','♦','♣'],SC=['#111','#dc2626','#dc2626','#111'],STK=['basliyorum','sahibi','curret','yenilmeye','uno','cay'];
+const post=o=>{try{parent.postMessage(o,'*')}catch(e){}},esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const src=k=>'../assets/batak/'+SN[k/13|0]+'_'+(k%13===12?'01':String(k%13+2).padStart(2,'0'))+'.webp';
+let S=null,ME=0,lastEv=null,lastChat=null,handKey='',cdUntil=0,rpcN=0,ctlKey='';const rpcW={};
+const rpc=(path,body)=>new Promise(res=>{const id=++rpcN;rpcW[id]=res;post({gameon:'rpc',id,method:'POST',path,body});setTimeout(()=>{if(rpcW[id]){delete rpcW[id];res(null)}},10000)});
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1600)};
+async function act(path,body){const r=await rpc('/batak/'+path,body||{});if(r){if(r.room)apply(r.room);if(r.error&&r.error!=='wait')toast({illegal:'Bu hamle yapılamaz',ended:'Oyun bitti'}[r.error]||'Hata')}return r}
+const nm=p=>p.username?'@'+p.username:(p.first_name||'Oyuncu'),P=s=>S.players[s];
+function bubble(seat,content,cls){const host=seat===ME?$('me'):document.querySelector('.opp[data-s="'+seat+'"]');if(!host)return;host.querySelectorAll('.bub').forEach(b=>b.remove());
+ const b=document.createElement('div');b.className='bub '+(cls||'');if(content.sticker){b.className='bub stk';b.innerHTML='<img src="../assets/stk/'+content.sticker+'.webp" alt="">'}else b.textContent=content.text||content;
+ host.appendChild(b);setTimeout(()=>b.remove(),content.sticker?5200:3800)}
+function beep(f,d){try{const a=beep.a||(beep.a=new (window.AudioContext||window.webkitAudioContext)());const o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+d)}catch(e){}}
+function apply(room){S=room;const b=room.batak;if(!b)return;
+ if(lastEv===null){lastEv=b.evn;lastChat=b.chat.length?b.chat[b.chat.length-1].id:0;if(room.status==='playing')GO.set(true)}
+ const order=[3,2,1].map(i=>(ME+i)%4),playing=room.status==='playing';
+ const opps=$('opps'),ok=order.join()+room.players.map(p=>p.id).join();
+ if(opps.dataset.k!==ok){opps.dataset.k=ok;opps.innerHTML=order.map(s=>'<div class="opp" data-s="'+s+'"><div class="pl"><img src="../profil/'+(P(s).avatar||'profil1')+'.webp" alt=""><b>'+esc(nm(P(s)))+'</b><i></i><em></em></div><div class="fan"></div></div>').join('')}
+ order.forEach(s=>{const el=opps.querySelector('[data-s="'+s+'"]'),c=b.counts[s];el.classList.toggle('act',b.turn===s&&playing);el.querySelector('i').textContent=b.score[s];el.querySelector('em').textContent=b.phase==='play'||b.phase==='summary'?'✋'+b.won[s]:'';
+  const f=el.querySelector('.fan'),k=Math.min(c,6);if(f.dataset.c!==String(c)){f.dataset.c=c;f.innerHTML=Array.from({length:k},()=>'<img src="../assets/batak/arka.webp" alt="">').join('')+'<b class="cn">'+c+'</b>'}});
+ const me=P(ME);$('mepl').innerHTML='<img src="../profil/'+(me.avatar||'profil1')+'.webp" alt=""><b>'+esc(nm(me))+'</b><i>'+b.score[ME]+'</i><em>'+(b.phase==='play'||b.phase==='summary'?'✋'+b.won[ME]:'')+'</em>';$('me').classList.toggle('act',b.turn===ME&&playing);
+ $('info').innerHTML='<span>El '+b.hand_no+'/'+b.rounds+'</span>'+(b.bidder!=null&&b.phase!=='bid'?'<span>İhale: '+esc(nm(P(b.bidder)))+' '+b.bid+'</span>':'')+(b.trump!=null?'<span style="color:'+(b.trump%3===0&&b.trump!==1?'#e5e7eb':'#fca5a5')+'">Koz: '+SY[b.trump]+'</span>':'');
+ $('deck').dataset.n='El '+b.hand_no+'/'+b.rounds;
+ // yerdeki kartlar
+ const fe=$('felt');fe.querySelectorAll('.tc').forEach(x=>x.remove());let ws=-1;if(b.clearing){let hi=null;ws=null}
+ b.trick.forEach(([s,k])=>{const im=document.createElement('img');im.className='tc p'+((s-ME+4)%4);im.src=src(k);fe.appendChild(im)});
+ // durum + kontroller
+ const st=b.phase==='bid'?(b.turn===ME?'İhale sırası sende':'İhale: '+nm(P(b.turn))+(b.bid?' · en yüksek '+b.bid:'')):b.phase==='trump'?(b.turn===ME?'Kozu seç':nm(P(b.turn))+' koz seçiyor'):b.phase==='play'?(b.turn===ME?(b.clearing?'…':'Sıra sende'):'Sıra: '+nm(P(b.turn))):b.phase==='summary'?'El bitti':'Oyun bitti';$('status').textContent=st;
+ const ck=b.phase+'|'+b.canBid.join()+'|'+b.pickTrump+'|'+b.bid;
+ if(ck!==ctlKey){ctlKey=ck;let h='';
+  if(b.canBid.length){h=[5,6,7,8,9,10,11,12,13].map(n=>'<button class="bb" data-n="'+n+'" '+(b.canBid.includes(n)?'':'disabled')+'>'+n+'</button>').join('')+(b.canBid.includes(0)?'<button class="bb pas" data-n="0">PAS</button>':'')}
+  else if(b.pickTrump)h=SY.map((s,i)=>'<button class="sb" data-s="'+i+'" style="color:'+SC[i]+'">'+s+'</button>').join('');
+  $('ctl').innerHTML=h}
+ const key=b.hand.join()+'|'+b.legal.join()+'|'+b.phase+(b.turn===ME);
+ if(key!==handKey){handKey=key;const sorted=b.hand.slice().sort((x,y)=>(x/13|0)-(y/13|0)||y%13-x%13),my=b.phase==='play'&&b.turn===ME&&playing;
+  $('hand').innerHTML=sorted.map(k=>'<img class="card '+(my?(b.legal.includes(k)?'ok':'no'):'')+'" data-k="'+k+'" src="'+src(k)+'" alt="">').join('')}
+ b.ev.filter(e=>e.i>lastEv).forEach(e=>{lastEv=e.i;
+  if(e.t==='bid')bubble(e.seat,e.n?('İhale '+e.n):'PAS','pass');
+  else if(e.t==='won_bid')toast('🏆 İhale '+nm(P(e.seat))+' '+e.n);
+  else if(e.t==='trump'){toast('Koz: '+SY[e.s]);beep(660,.1)}
+  else if(e.t==='trick'){bubble(e.seat,'+1 el','pass');beep(440,.08)}
+  else if(e.t==='play')beep(520,.05)});
+ b.chat.filter(m=>m.id>lastChat).forEach(m=>{lastChat=m.id;bubble(m.seat,m.sticker?{sticker:m.sticker}:{text:m.text})});
+ const ov=$('ov');
+ if(b.phase==='summary'&&b.summary){const s=b.summary;$('ecard').innerHTML='<h1>El '+s.no+' bitti</h1><small style="margin:0 0 8px">'+esc(nm(P(s.bidder)))+' '+s.bid+' ihale aldı: '+(s.ok?'✔ tuttu':'✘ yattı')+'</small>'+[0,1,2,3].map(i=>'<div class="rk"><img src="../profil/'+(P(i).avatar||'profil1')+'.webp" alt="">'+esc(nm(P(i)))+'<span>✋'+s.tricks[i]+' · '+(s.delta[i]>0?'+':'')+s.delta[i]+'<br>toplam '+b.score[i]+'</span></div>').join('')+'<small>Sonraki el birazdan başlıyor…</small>';ov.classList.add('on')}
+ else if(room.status==='done')showEnd(room);else ov.classList.remove('on')}
+function showEnd(room){const b=room.batak,rk=[0,1,2,3].sort((a,c)=>b.score[c]-b.score[a]||a-c),pts=room.points||{},my=String(P(ME).id),note=room.notes&&room.notes[my];
+ $('ecard').innerHTML='<h1>'+(b.winner===ME?'🏆 Kazandın!':'Oyun bitti')+'</h1>'+rk.map((s,i)=>'<div class="rk"><b>'+(i+1)+'.</b><img src="../profil/'+(P(s).avatar||'profil1')+'.webp" alt="">'+esc(nm(P(s)))+'<span>'+b.score[s]+' puan'+(pts[String(P(s).id)]?' · +'+pts[String(P(s).id)]+'⭐':'')+'</span></div>').join('')+
+  (room.bots?'<small>Botlu oyunda puan verilmez</small>':note?'<small>'+{short:'Oyun çok kısa sürdü: puan verilmedi',pair:'Aynı oyuncularla günlük puan sınırı doldu',cap:'Günlük puan sınırına ulaştın'}[note]+'</small>':'')+
+  '<button data-c="x">Kapat</button><small>Aynı kişilerle tekrar için üstteki “🔁 Rövanş” düğmesine bas</small>';$('ov').classList.add('on');GO.set(false)}
+$('ecard').onclick=e=>{if(e.target.dataset.c==='x')$('ov').classList.remove('on')};
+$('hand').onclick=e=>{const k=e.target.dataset&&e.target.dataset.k;if(k===undefined||!S)return;const b=S.batak,kk=+k;
+ if(b.phase!=='play')return toast(b.phase==='bid'?'Önce ihale':'Kozu bekle');if(b.turn!==ME)return toast('Sıra sende değil');
+ if(!b.legal.includes(kk))return toast('Bu kartı atamazsın (renk/koz/yükseltme kuralı)');act('play',{card:kk})};
+$('ctl').onclick=e=>{const d=e.target.dataset;if(d.n!==undefined)act('bid',{n:+d.n});else if(d.s!==undefined)act('trump',{s:+d.s})};
+$('stk').innerHTML=STK.map(s=>'<img src="../assets/stk/'+s+'.webp" data-s="'+s+'" alt="">').join('');
+$('emo').innerHTML=['😀','😂','😡','😎','👍','😭','🔥','🎉','🤔','😴'].map(e=>'<button>'+e+'</button>').join('');
+$('emo').onclick=e=>{if(e.target.tagName==='BUTTON'){const i=$('cin');i.value=(i.value+e.target.textContent).slice(0,80);i.focus()}};
+$('cbtn').onclick=()=>$('chat').classList.toggle('on');$('cx').onclick=()=>$('chat').classList.remove('on');
+async function sendChat(body){const left=Math.ceil((cdUntil-Date.now())/1000);if(left>0)return toast('⏱ '+left+' sn bekle');
+ const r=await act('chat',body);if(r&&r.ok){cdUntil=Date.now()+5000;$('cin').value='';$('chat').classList.remove('on')}else if(r&&r.error==='wait')cdUntil=Date.now()+r.wait*1000}
+$('stk').onclick=e=>{if(e.target.dataset.s)sendChat({sticker:e.target.dataset.s})};
+$('csend').onclick=()=>{const t=$('cin').value.trim();if(t)sendChat({text:t})};$('cin').onkeydown=e=>{if(e.key==='Enter')$('csend').click()};
+setInterval(()=>{const left=Math.ceil((cdUntil-Date.now())/1000),bt=$('csend');bt.disabled=left>0;bt.textContent=left>0?'⏱ '+left:'Gönder';$('stk').classList.toggle('cd',left>0)},250);
+addEventListener('message',e=>{const d=e.data||{};if(e.source!==parent)return;
+ if(d.gameon==='rpc-res'){const f=rpcW[d.id];if(f){delete rpcW[d.id];f(d.res)}}
+ else if(d.gameon==='init'){ME=d.me|0;if(d.state)apply(d.state)}
+ else if(d.gameon==='state'&&d.s)apply(d.s)});
+post({gameon:'ready'});
+</script>
+</body>
+</html>

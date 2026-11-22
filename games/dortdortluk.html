@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark"><head>
+<script>(function(){try{if(localStorage.getItem('gameon.sound')==='0'){const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d){if(typeof AudioDestinationNode!=='undefined'&&d instanceof AudioDestinationNode)return d;return c.apply(this,arguments)};const p=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){this.muted=true;return p.apply(this,arguments)}}}catch(e){}})();</script>
+
 <script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -73,6 +75,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 #conf b{position:absolute;top:-20px;width:9px;height:14px;animation:fall var(--t) linear forwards}
 @keyframes fall{to{transform:translate(var(--x),110vh) rotate(720deg)}}
 .hint{font-size:12px;color:var(--mut);text-align:center;max-width:420px}
+#newBtn{display:none!important}
 </style></head><body>
 <div id="app">
 <div class="logo"><span class="mini r"></span><h1>Dört Dörtlük</h1><span class="mini y"></span></div>
@@ -180,7 +183,7 @@ function maybeBot(){if(mode!=='bot'||over||turn!==2)return;const id=gid;busy=tru
 // ---- UI ----
 function newScore(){score={0:0,1:0,2:0}}
 $('newBtn').onclick=()=>{sfx.click();if(over)starter=3-starter;reset()};
-function extraBtns(){const row=$('newBtn').parentNode;[['room','🏠 Oda Kur'],...(ROOMMODE?[['bot','🤖 Botlarla Oyna']]:[])].forEach(([c,t])=>{const x=document.createElement('button');x.className='btn';x.textContent=t;
+function extraBtns(){const row=$('newBtn').parentNode;[].forEach(([c,t])=>{const x=document.createElement('button');x.className='btn';x.textContent=t;
  x.onclick=()=>{if(ROOMMODE&&!over)return status('Oyun bitince yeni oyun açabilirsin');post({gameon:'newgame',choice:c})};row.insertBefore(x,$('snd'))});if(ROOMMODE)$('newBtn').style.display='none'}
 extraBtns();
 $('snd').onclick=()=>{muted=!muted;$('snd').textContent=muted?'🔇 Ses kapalı':'🔊 Ses açık';if(!muted){A();sfx.click()}};

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<script>(function(){try{if(localStorage.getItem('gameon.sound')==='0'){const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d){if(typeof AudioDestinationNode!=='undefined'&&d instanceof AudioDestinationNode)return d;return c.apply(this,arguments)};const p=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){this.muted=true;return p.apply(this,arguments)}}}catch(e){}})();</script>
+
 <script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 
 <meta charset="utf-8">
@@ -116,9 +118,9 @@ function render(){let h="";const o=G.o;GO.set(G.phase!=="menu"&&!G.over,RK);if(R
  ${G.wait&&!G.over?`<button data-a="pass">Sırayı ${G.p[1-G.cur].name}’e ver →</button>`:""}
  <div class="boards"><div><h2>${ROOM?pav(1)+esc(en.name)+" suları":"Düşman suları"}</h2>${boardHTML(en,G.over?"all":"enemy",inter)}${fleetHTML(en)}</div>
  <div><h2>${ROOM?pav(0)+esc(me.name):"Filon"}</h2>${boardHTML(me,"own",false)}${fleetHTML(me)}</div></div>
- <div class="log">${(G.log||[]).slice(-3).reverse().join("<br>")}</div>${ROOM?"":`<button class="sec" data-a="menu">Menü</button>`}`}
+ <div class="log">${(G.log||[]).slice(-3).reverse().join("<br>")}</div>`}
  if(G.pass)h+=`<div class="ov"><h1>${G.pass.t}</h1><p class="sub">${G.pass.s}</p><button data-a="ok">${G.pass.b}</button></div>`;
- if(G.over)h+=`<div class="ov win" id="win"><h1>🏆 ${G.p[G.cur].name} kazandı!</h1><p class="sub">Düşman filosu battı.</p>${ROOM?`<button data-a="ng-room">🏠 Oda Kur</button><button data-a="ng-bot">🤖 Botlarla Oyna</button>`:`<button data-a="menu">Yeni oyun</button><button data-a="ng-room">🏠 Oda Kur</button>`}<button class="sec" data-a="hide">Tahtaları gör</button></div>`;
+ if(G.over)h+=`<div class="ov win" id="win"><h1>🏆 ${G.p[G.cur].name} kazandı!</h1><p class="sub">Düşman filosu battı.</p><button class="sec" data-a="hide">Tahtaları gör</button></div>`;
  $("#app").innerHTML=h}
 
 /* ---- Olaylar ---- */

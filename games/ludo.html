@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="tr"><head>
+<script>(function(){try{if(localStorage.getItem('gameon.sound')==='0'){const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d){if(typeof AudioDestinationNode!=='undefined'&&d instanceof AudioDestinationNode)return d;return c.apply(this,arguments)};const p=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){this.muted=true;return p.apply(this,arguments)}}}catch(e){}})();</script>
+
 <script>const GO={on:null,set(v,r){v=!!v;if(this.on===v)return;this.on=v;try{parent.postMessage({gameon:v?'start':'end',ranking:r},'*')}catch(e){}}};</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,6 +27,7 @@ button:active{transform:translateY(3px);box-shadow:0 1px 0 #7a5a24}button:focus-
 #modal,#setup{position:absolute;inset:0;display:none;place-items:center;background:#02080fd0;z-index:50}#setup{z-index:60}#modal.on,#setup.on{display:grid}
 #modal div,#setup>div{background:#14304a;border:2px solid #e8c477;border-radius:18px;padding:26px 40px;text-align:center}#modal h2,#setup h2{margin:0 0 14px;font-size:28px;color:#e8c477}#setup p{margin:12px 0 6px;color:#cdbf9f}.opts{display:flex;gap:8px;justify-content:center}.opts button{background:#0b1a2b;color:#f1e6cf;box-shadow:none;border:1px solid #e8c47766}.opts button.sel{background:linear-gradient(#f0d28b,#c99b4d);color:#2b1a08}#go{margin-top:18px}
 #rot{position:fixed;inset:0;z-index:999;display:none;place-items:center;background:#0a1522;text-align:center;font-size:20px;line-height:1.6;padding:24px}@media (orientation:landscape) and (max-height:520px){#rot{display:grid}}
+#nb{display:none!important}
 </style></head><body>
 <div id="stage"><canvas id="cv"></canvas>
  <div id="panel"><h1>LUDO</h1><div id="pls"></div><div id="msg"></div></div>
@@ -136,7 +139,7 @@ try{screen.orientation.lock('portrait').catch(()=>{})}catch(e){}
 addEventListener('message',e=>{const d=e.data||{};if(e.source!==parent)return;
  if(d.gameon==='init'){M=d.me|0;(d.players||[]).forEach((p,i)=>{NAMES[i]=p.username?'@'+p.username:(p.first_name||'Oyuncu');PA[i]=p.avatar||'profil1'});cfg.n=4;cfg.local=false;newGame()}
  else if(d.gameon==='remote'&&d.data)rq.push(d.data)});
-(function(){const b=$('#mb');b.textContent='🏠 Oda Kur';b.onclick=()=>post({gameon:'newgame',choice:'room'});if(ROOM){const x=document.createElement('button');x.textContent='🤖 Botlarla Oyna';x.onclick=()=>post({gameon:'newgame',choice:'bot'});b.after(x)}
+(function(){const b=$('#mb');b.textContent='Kapat';b.onclick=()=>$('#modal').classList.remove('on');
  $('#nb').onclick=()=>{if(ROOM&&!over)return ui('Oyun bitince yeni oyun açabilirsin');if(ROOM){$('#mt').textContent='Yeni oyun';$('#modal').classList.add('on')}else $('#setup').classList.add('on')}})();
 fit();requestAnimationFrame(frame);
 if(ROOM){ACT=[0,1,2,3];T=[0,1,2,3].map(i=>[0,1,2,3].map(k=>({i,k,p:0,x:BS[i][k][0],y:BS[i][k][1],z:0,free:1})));layout();turn=0;over=true;post({gameon:'ready'})}
