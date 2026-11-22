@@ -254,7 +254,9 @@ body.foxzoom #foxBubble{transform:scale(.7)}
   <div class="topbar-right">
     <div class="user-pill"><img class="user-avatar" id="uAv" alt=""><span class="user-name" id="uName">Oyuncu</span><span class="pts" id="uPts">⭐ 0</span></div>
     <div class="settings-btn" id="settingsBtn">⚙️
-      <div class="settings-dropdown" id="settingsDrop"><button id="changeProfile">🖼️ Profil resmini değiştir</button></div>
+      <div class="settings-dropdown" id="settingsDrop"><button id="changeProfile">🖼️ Profil resmini değiştir</button>
+        <button id="tgSound">🔊 Ses: Açık</button>
+        <button id="tgHaptic">📳 Titreşim: Açık</button></div>
     </div>
   </div>
 </header>
@@ -343,7 +345,8 @@ const GAMES=[
  {id:'amiral',name:'Amiral Battı',genre:'Strateji',badge:'Yeni',src:'games/amiral.html',c:'#0369a1,#0ea5e9'},
  {id:'dortdortluk',name:'Dört Dörtlük',genre:'Zeka',badge:'Yeni',src:'games/dortdortluk.html',c:'#be123c,#f43f5e'},
  {id:'tavla',name:'Tavla',genre:'Klasik',badge:'Yeni',src:'games/tavla.html',c:'#92400e,#d97706'},
- {id:'uno',name:'UNO',genre:'Kart Oyunu',soon:true}
+ {id:'batak',name:'Batak',genre:'Kart Oyunu',badge:'Yeni',src:'games/batak.html',c:'#1d4ed8,#d4a017'},
+ {id:'uno',name:'UNO',genre:'Kart Oyunu',badge:'Yeni',src:'games/uno.html',c:'#be185d,#ec4899'}
 ];
 const I_PLAY='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9h12a4 4 0 0 1 4 4v2a3 3 0 0 1-5.2 2L15 15H9l-1.8 2A3 3 0 0 1 2 15v-2a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/><circle cx="16" cy="12" r=".7"/><circle cx="18" cy="14" r=".7"/></svg>',I_USER='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z" fill="#34d399"/></svg>';
 const PAGES={siralama:'Siralama.html',arkadaslar:'Arkadaslar.html',bildirimler:'Bildirimler.html'};

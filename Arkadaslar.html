@@ -48,13 +48,20 @@ function pname(){try{return localStorage.getItem("gameon.name")||"Sen"}catch(e){
 
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var G=document.getElementById('g'),API=window.GameOnAPI;
-function draw(list){G.innerHTML=list.length?list.map(function(f,i){var n=f.username?'@'+f.username:(f.first_name||'Oyuncu');
-  return '<div class="card rise" style="animation-delay:'+(i*50)+'ms"><div class="fa"><img class="av" width="54" height="54" src="profil/'+(f.avatar||'profil1')+'.webp" alt=""></div><div class="nm">'+esc(n)+'</div><div class="st">⭐ '+f.points+'</div><button class="btn" data-m="'+f.id+'">💬 Mesaj</button><button class="btn gray" data-d="'+f.id+'">Çıkar</button></div>'}).join(''):'<div class="card"><div class="st">Henüz arkadaşın yok. Kullanıcı adı veya ID ile ekle.</div></div>'}
-function load(){(API&&API.enabled?API.req('GET','/api/friends'):Promise.reject()).then(function(r){draw(r.friends||[])}).catch(function(){G.innerHTML='<div class="card"><div class="st">Arkadaşlar yüklenemedi</div></div>'})}
-document.getElementById('add').onclick=function(){var q=document.getElementById('q').value.trim();if(!q||!API)return;API.req('POST','/api/friends',{query:q}).then(function(r){if(r&&r.ok){document.getElementById('q').value='';draw(r.friends)}else alert('Kullanıcı bulunamadı (bota /start vermiş olmalı)')})};
-G.onclick=function(e){var m=e.target.dataset.m,d=e.target.dataset.d;
-  if(m)API.req('POST','/api/friends/'+m+'/msg',{}).then(function(r){alert(r&&r.ok?'Bot sana sohbet bağlantısını DM olarak gönderdi.':'Mesaj gönderilemedi (önce bota /start ver)')});
-  if(d)API.req('DELETE','/api/friends/'+d).then(load)};
+var D={friends:[],incoming:[],outgoing:[]};
+function card(x,btns){var n=x.username?'@'+x.username:(x.first_name||'Oyuncu');return '<div class="card rise"><div class="fa"><img class="av" width="54" height="54" src="profil/'+(x.avatar||'profil1')+'.webp" alt=""></div><div class="nm">'+esc(n)+'</div><div class="st">⭐ '+x.points+'</div>'+btns+'</div>'}
+function draw(r){D=r||D;var h='';
+  D.incoming.forEach(function(x){h+=card(x,'<button class="btn" data-a="'+x.id+'">✅ Kabul</button><button class="btn gray" data-r="'+x.id+'">❌ Reddet</button>')});
+  D.friends.forEach(function(x){h+=card(x,'<button class="btn" data-m="'+x.id+'">💬 Mesaj</button><button class="btn gray" data-d="'+x.id+'">Çıkar</button>')});
+  D.outgoing.forEach(function(x){h+=card(x,'<div class="st">⏳ İstek bekliyor</div>')});
+  G.innerHTML=h||'<div class="card"><div class="st">Henüz arkadaşın yok. Kullanıcı adı veya ID ile istek gönder.</div></div>'}
+function load(){(API&&API.enabled?API.req('GET','/api/friends'):Promise.reject()).then(draw).catch(function(){G.innerHTML='<div class="card"><div class="st">Arkadaşlar yüklenemedi</div></div>'})}
+document.getElementById('add').onclick=function(){var q=document.getElementById('q').value.trim();if(!q||!API)return;API.req('POST','/api/friends',{query:q}).then(function(r){if(r&&r.ok){document.getElementById('q').value='';draw(r);alert('İstek gönderildi. Karşı taraf kabul edince arkadaş olursunuz.')}else alert('Kullanıcı bulunamadı (bota /start vermiş olmalı)')})};
+G.onclick=function(e){var t=e.target.dataset,id;
+  if(t.m)API.req('POST','/api/friends/'+t.m+'/msg',{}).then(function(r){alert(r&&r.ok?'Bot sana sohbet bağlantısını DM olarak gönderdi.':'Mesaj gönderilemedi (önce bota /start ver)')});
+  else if(t.d)API.req('DELETE','/api/friends/'+t.d).then(draw);
+  else if(t.a)API.req('POST','/api/friends/'+t.a+'/accept',{}).then(draw);
+  else if(t.r)API.req('POST','/api/friends/'+t.r+'/decline',{}).then(draw)};
 load();
 </script>
 <script>
