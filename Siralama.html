@@ -39,7 +39,8 @@ body.foxzoom #foxBubble{transform:scale(.7)}
 </head><body>
 <div class="wrap"><a class="back" href="index.html">← Ana Ekran</a>
 <h1>🏆 Sıralama</h1>
-<div id="tabs" style="display:flex;gap:8px;margin-bottom:14px"></div>
+<div id="tabs" style="display:flex;gap:8px;margin-bottom:10px"></div>
+<div id="myrank" style="margin-bottom:14px;padding:10px 14px;border-radius:12px;background:var(--bg-card);border:1px solid var(--accent);font-weight:800;font-size:14px"></div>
 <div class="top3" id="top3"></div>
 <div class="list" id="list"></div>
 </div>
@@ -52,13 +53,14 @@ function nm(p){return esc(p.username?'@'+p.username:(p.first_name||'Oyuncu'))}
 function av(p,s){return '<img class="av" width="'+s+'" height="'+s+'" src="profil/'+(p.avatar||'profil1')+'.webp" alt="">'}
 var T=document.getElementById('top3'),L=document.getElementById('list');
 function load(per){return(window.GameOnAPI&&GameOnAPI.enabled?GameOnAPI.req('GET','/api/leaderboard?period='+per):Promise.reject()).then(function(r){
+  var mr=document.getElementById('myrank');if(r&&r.me)mr.textContent=r.me.points>0?('Senin sıran: #'+r.me.rank+' · '+r.me.points+' puan'):'Bu dönemde henüz puanın yok';else mr.textContent='';
   if(!r||!r.items||!r.items.length){T.innerHTML='';L.innerHTML='<div class="row"><div><div class="nm">Henüz sıralama yok</div><div class="gm">Oda kurup oynayarak puan kazan!</div></div></div>';return}
   var all=r.items,cls=['f','s','t'],rk=['r1','r2','r3'],order=[1,0,2].filter(function(i){return all[i]});
   T.innerHTML=order.map(function(i){var x=all[i];return '<div class="pod '+cls[i]+' rise" style="animation-delay:'+(i*80)+'ms">'+av(x,i?54:72)+'<div class="pn">'+nm(x)+'</div><div class="rk '+rk[i]+'">'+(i+1)+'</div><div class="pp">'+x.points+' Puan</div></div>'}).join('');
   L.innerHTML=all.slice(3).map(function(x,i){return '<div class="row rise" style="animation-delay:'+(i*50)+'ms'+(r.me&&x.id===r.me.id?';border-color:var(--accent)':'')+'"><span class="rn">'+(i+4)+'</span>'+av(x,36)+'<div><div class="nm">'+nm(x)+'</div></div><span class="pts">'+x.points+'</span></div>'}).join('')
    +(r.me&&r.me.rank&&r.me.rank>3?'<div class="row" style="margin-top:6px;border-color:var(--accent)"><span class="rn">'+r.me.rank+'</span>'+av(r.me,36)+'<div><div class="nm">Sen</div></div><span class="pts">'+r.me.points+'</span></div>':'');
 }).catch(function(){T.innerHTML='';L.innerHTML='<div class="row"><div class="nm">Sıralama yüklenemedi</div></div>'})}
-var TB=document.getElementById('tabs'),cur='day';[['day','Günlük'],['week','Haftalık'],['all','Genel']].forEach(function(x){var b=document.createElement('button');b.className='btn gray';b.textContent=x[1];b.style.flex='1';b.onclick=function(){cur=x[0];Array.prototype.forEach.call(TB.children,function(c){c.className='btn gray'});b.className='btn';load(cur)};TB.appendChild(b)});TB.children[0].className='btn';load('day');
+var TB=document.getElementById('tabs'),cur='all';[['day','Günlük'],['week','Haftalık'],['all','Genel']].forEach(function(x){var b=document.createElement('button');b.className='btn gray';b.textContent=x[1];b.style.flex='1';b.onclick=function(){cur=x[0];Array.prototype.forEach.call(TB.children,function(c){c.className='btn gray'});b.className='btn';load(cur)};TB.appendChild(b)});TB.children[2].className='btn';load('all');
 </script>
 <script>
 /* --- DİŞİ TİLKİ PET: bildirim söyleme + AFK cilve (günde 1 kez) + mavi bulanık arkaplan --- */
